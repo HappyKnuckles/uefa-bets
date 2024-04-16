@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test:e2e": "cypress run",
     "test:unit": "vitest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "openapigen": "npx @openapitools/openapi-generator-cli generate -i https://localhost:44320/swagger/v1/swagger.json -g typescript-axios -o src/app/swagger --type-mappings=DateTime=Date"
   },
   "dependencies": {
     "@capacitor/app": "6.0.0",
@@ -19,6 +20,7 @@
     "@capacitor/status-bar": "6.0.0",
     "@ionic/vue": "^7.0.0",
     "@ionic/vue-router": "^7.0.0",
+    "axios": "^1.6.8",
     "ionicons": "^7.0.0",
     "vue": "^3.3.0",
     "vue-router": "^4.2.0"
