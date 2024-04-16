@@ -1,0 +1,8 @@
+{
+  "name": "UEFA Bets",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite",
+  "id": "043dcf9a"
+}
