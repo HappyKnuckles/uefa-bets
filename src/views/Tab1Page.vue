@@ -2,13 +2,16 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Communities</ion-title>
+        <ion-title>Dashboard</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content>
       <div>
         <ul>
-          <li v-for="item in community" :key="item.id">{{ item.communityName }}</li>
+          <li v-for="user in users" :key="user.userId">{{ user.username }}</li>
+        </ul>
+        <ul>
+          <li v-for="game in games" :key="game.gameId">{{game.teamHomeName}} {{game.teamHomeGoals}} : {{game.teamAwayGoals}} {{game.teamAwayName}}  </li>
         </ul>
       </div>
     </ion-content>
@@ -16,30 +19,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'; // Import necessary Vue functions
+import { onMounted } from 'vue'; 
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue';
+import apiService from '@/services/apiService'; 
+import { User, Game } from '@/generated/api';
 
-import { Configuration, CommunityApi } from '@/generated'; // Import the CommunityApi class and Configuration
+let users: User[] = [];
+let games: Game[] = [];
 
-const community = ref([]);
 
-// Create a configuration object with the base URL set to https://localhost:44320
-const configuration = new Configuration({ basePath: 'https://localhost:44320' });
 
-// Create an instance of CommunityApi with the configuration
-const communityApi = new CommunityApi(configuration);
-
-// Fetch community data when the component is mounted
 onMounted(async () => {
   try {
-    // Call the specific API function to get community data
-    const response = await communityApi.apiCommunityGet();
-    const data = await response.data;
-    // Update the community data
-    community.value = data;
-    console.log(community.value)
+    const response = await apiService.userApi.apiUserGet();
+    const data = response.data;
+    users = data;
   } catch (error) {
     console.error('Error fetching community data:', error);
+  }
+  try {
+    const response = await apiService.gameApi.apiGameGet();
+    const data = response.data;
+    games = data;
+    const now = new Date();
+    games = games.filter(game =>{
+      const gameStartsAt = new Date(Date.parse(game.gameStartsAt!));  
+      const diff = (gameStartsAt!.getTime() - now.getTime()) / (1000 * 60);   
+      return Math.abs(diff) <= 90; 
+    })
+  } catch (error){
+    console.error('Error fetchign games', error);
   }
 });
 </script>
@@ -47,5 +56,4 @@ onMounted(async () => {
 
 
 <style scoped>
-/* Add custom styles if needed */
 </style>
