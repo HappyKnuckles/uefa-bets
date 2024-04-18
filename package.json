@@ -10,7 +10,7 @@
     "test:e2e": "cypress run",
     "test:unit": "vitest",
     "lint": "eslint .",
-    "openapigen": "npx @openapitools/openapi-generator-cli generate -i https://localhost:44320/swagger/v1/swagger.json -g typescript-axios -o src/app/swagger --type-mappings=DateTime=Date"
+    "openapigen": "openapi-generator-cli generate -i src/generated/swagger.yaml -g typescript-axios -o src/generated"
   },
   "dependencies": {
     "@capacitor/app": "6.0.0",

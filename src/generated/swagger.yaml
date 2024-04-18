@@ -89,17 +89,31 @@ paths:
     post:
       tags:
         - Bet
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BetInputModel'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/BetInputModel'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/BetInputModel'
+      parameters:
+        - name: homeGoals
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: awayGoals
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: gameId
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: userId
+          in: query
+          style: form
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Success
@@ -519,17 +533,17 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserCommunity'
+                  $ref: '#/components/schemas/CommunityMembersDto'
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserCommunity'
+                  $ref: '#/components/schemas/CommunityMembersDto'
             text/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserCommunity'
+                  $ref: '#/components/schemas/CommunityMembersDto'
   /api/UserCommunity:
     post:
       tags:
@@ -643,16 +657,6 @@ components:
         game:
           $ref: '#/components/schemas/Game'
       additionalProperties: false
-    BetInputModel:
-      type: object
-      properties:
-        game:
-          $ref: '#/components/schemas/Game'
-        bet:
-          $ref: '#/components/schemas/Bet'
-        user:
-          $ref: '#/components/schemas/User'
-      additionalProperties: false
     Community:
       type: object
       properties:
@@ -669,6 +673,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserCommunity'
+          nullable: true
+      additionalProperties: false
+    CommunityMembersDto:
+      type: object
+      properties:
+        communityId:
+          type: string
+          format: uuid
+        communityName:
+          type: string
+          nullable: true
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
           nullable: true
       additionalProperties: false
     Game:
