@@ -117,6 +117,36 @@ paths:
       responses:
         '200':
           description: Success
+  /api/Bet/user-bets:
+    get:
+      tags:
+        - Bet
+      parameters:
+        - name: userId
+          in: query
+          style: form
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameBetDto'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameBetDto'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameBetDto'
   /api/Community:
     get:
       tags:
@@ -219,17 +249,10 @@ paths:
       responses:
         '200':
           description: Success
-  /api/Community/{communityId}/points:
+  /api/Community/set-points:
     put:
       tags:
         - Community
-      parameters:
-        - name: communityId
-          in: path
-          required: true
-          style: simple
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -244,15 +267,14 @@ paths:
       responses:
         '200':
           description: Success
-  /api/Community/{communityId}/ranking:
+  /api/Community/ranking:
     get:
       tags:
         - Community
       parameters:
         - name: communityId
-          in: path
-          required: true
-          style: simple
+          in: query
+          style: form
           schema:
             type: string
             format: uuid
@@ -262,19 +284,13 @@ paths:
           content:
             text/plain:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/CommunityMembersDto'
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/CommunityMembersDto'
             text/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/CommunityMembersDto'
   /api/Game:
     get:
       tags:
@@ -357,6 +373,36 @@ paths:
       responses:
         '200':
           description: Success
+  /api/Game/games-without-bets:
+    get:
+      tags:
+        - Game
+      parameters:
+        - name: userId
+          in: query
+          style: form
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
   /api/User:
     post:
       tags:
@@ -462,7 +508,7 @@ paths:
             text/json:
               schema:
                 $ref: '#/components/schemas/User'
-  /api/User/{UserId}/rank:
+  /api/User/rank:
     get:
       tags:
         - User
@@ -470,12 +516,6 @@ paths:
         - name: userName
           in: query
           style: form
-          schema:
-            type: string
-        - name: UserId
-          in: path
-          required: true
-          style: simple
           schema:
             type: string
       responses:
@@ -657,6 +697,22 @@ components:
         game:
           $ref: '#/components/schemas/Game'
       additionalProperties: false
+    BetDto:
+      type: object
+      properties:
+        homeTeamGoals:
+          type: integer
+          format: int32
+          nullable: true
+        awayTeamGoals:
+          type: integer
+          format: int32
+          nullable: true
+        betTimestamp:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
     Community:
       type: object
       properties:
@@ -684,10 +740,13 @@ components:
         communityName:
           type: string
           nullable: true
+        communityPoints:
+          type: integer
+          format: int32
         members:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/UserDto'
           nullable: true
       additionalProperties: false
     Game:
@@ -720,6 +779,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Bet'
+          nullable: true
+      additionalProperties: false
+    GameBetDto:
+      type: object
+      properties:
+        bet:
+          $ref: '#/components/schemas/BetDto'
+        homeTeamName:
+          type: string
+          nullable: true
+        awayTeamName:
+          type: string
           nullable: true
       additionalProperties: false
     User:
@@ -767,4 +838,18 @@ components:
           $ref: '#/components/schemas/Community'
         user:
           $ref: '#/components/schemas/User'
+      additionalProperties: false
+    UserDto:
+      type: object
+      properties:
+        points:
+          type: integer
+          format: int32
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        registrationDate:
+          type: string
+          format: date-time
       additionalProperties: false

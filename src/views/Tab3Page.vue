@@ -2,17 +2,12 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Tab 3</ion-title>
+        <ion-title>Communities</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Tab 3</ion-title>
-        </ion-toolbar>
-      </ion-header>
-      <ion-item v-for="community in userCommunities" :key="community.communityId!">{{community.communityName}}
-      <ion-item v-for="user in community.members" :key="user.userId">{{user.username}}</ion-item>
+      <ion-item v-for="community in userCommunities" :key="community.communityId!">{{community.communityName}} {{ community.communityPoints }}
+      <ion-item v-for="user in community.members" :key="user.name!">{{user.name}}</ion-item>
       </ion-item>
     </ion-content>
   </ion-page>
@@ -38,3 +33,5 @@ onBeforeMount(async () => {
   }
 })
 </script>
+<style scoped>
+</style>

@@ -1,17 +1,31 @@
 <template>
-  <div>
-    <form @submit.prevent="login">
-      <label for="username">Username:</label>
-      <input type="text" v-model="loginForm.username" id="username" />
-      <button type="submit">Login</button>
-    </form>
-  </div>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Login</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <form @submit.prevent="login">
+        <ion-input
+          label="Username:"
+          type="text"
+          v-model="loginForm.username"
+          id="username"
+          helper-text="If you aren't registered yet, an account will be created"
+        >
+          <ion-button slot="end" type="submit">Login</ion-button>
+        </ion-input>
+      </form>
+    </ion-content>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import apiService from "@/services/apiService";
+import { IonInput, IonButton, IonHeader, IonToolbar, IonTitle, IonPage, IonContent } from "@ionic/vue";
 
 const loginForm = ref({
   username: "",
@@ -35,3 +49,12 @@ async function login() {
   }
 }
 </script>
+<style scoped>
+form {
+  display: flex;
+  height: 75%;
+  justify-content: center;
+  align-items: center;  
+  padding: 15px;
+}
+</style>

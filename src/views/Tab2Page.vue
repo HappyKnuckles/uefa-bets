@@ -2,49 +2,113 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Place Bets</ion-title>
+        <ion-title>Bets</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content :fullscreen="true">
-      <ul>
-        <li v-for="game in games" :key="game.gameId">
-          <form @submit.prevent="() => bet(game.gameId!)">
-            {{ game.teamHomeName }}
-            <ion-input placeholder="0" v-model="getBetForm(game.gameId!).homeTeamGoals"></ion-input>
+    <ion-content v-if="isLoading">
+      <ion-spinner></ion-spinner>
+    </ion-content>
+    <ion-content :fullscreen="true" v-else>
+      <h1>Your bets</h1>
+      <ion-grid v-for="bet in yourBets" :key="bet.bet?.betTimestamp!">
+        <ion-row class="game">
+          <ion-col class="ion-text-left">{{ bet.homeTeamName }}</ion-col>
+          <ion-col class="ion-text-center">
+            {{ bet.bet?.homeTeamGoals }}
             :
-            <ion-input placeholder="0" v-model="getBetForm(game.gameId!).awayTeamGoals"></ion-input>
-            {{ game.teamAwayName }}
-            <ion-button type="submit"> Place Bet</ion-button>
-          </form>
-        </li>
-      </ul>
+            {{ bet.bet?.homeTeamGoals }}
+          </ion-col>
+          <ion-col class="ion-text-right">{{ bet.awayTeamName }}</ion-col>
+        </ion-row>
+      </ion-grid>
+      <h1>Needs bets</h1>
+      <ion-grid v-for="game in games" :key="game.gameId">
+        <form
+          @submit.prevent="() => bet(game.gameId!)"
+          v-if="new Date(game.gameStartsAt!) > new Date()"
+        >
+          <ion-row class="game">
+            <ion-col size="4" class="ion-text-left">{{ game.teamHomeName }}</ion-col>
+
+            <ion-col class="input-container">
+              <ion-input
+                class="ion-text-center"
+                placeholder="0"
+                v-model="getBetForm(game.gameId!).homeTeamGoals"
+              ></ion-input>
+              <span>:</span>
+              <ion-input
+                class="ion-text-center"
+                placeholder="0"
+                v-model="getBetForm(game.gameId!).awayTeamGoals"
+              ></ion-input>
+            </ion-col>
+
+            <ion-col size="4" class="ion-text-right">{{ game.teamAwayName }}</ion-col>
+          </ion-row>
+          <ion-row
+            ><ion-button style="margin: 15px auto 0" size="small" type="submit">
+              Place Bet</ion-button
+            ></ion-row
+          >
+        </form>
+      </ion-grid>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { Game, User } from '@/generated/api';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton } from '@ionic/vue';
+import { Game, GameBetDto, User } from "@/generated/api";
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonInput,
+  IonButton,
+  IonRow,
+  IonGrid,
+  IonCol,
+  IonSpinner
+} from "@ionic/vue";
 import apiService from "@/services/apiService";
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount, ref } from "vue";
 
 let games: Game[] = [];
+let yourBets: GameBetDto[] = [];
 const currentUser: User = JSON.parse(sessionStorage.getItem("currentuser")!);
 const userId: string = currentUser.userId!;
-const betForms = ref<{ [key: number]: { userId: string; homeTeamGoals: string; awayTeamGoals: string } }>({});
+const betForms = ref<{
+  [key: number]: { userId: string; homeTeamGoals: string; awayTeamGoals: string };
+}>({});
+const isLoading = ref(true);
 
 onBeforeMount(async () => {
   try {
-    const response = await apiService.gameApi.apiGameGet();
+    const response = await apiService.gameApi.apiGameGamesWithoutBetsGet(userId);
     games = response.data;
     // Initialize betForms for each game
-    games.forEach(game => {
-      betForms.value[game.gameId!] = { userId: userId, homeTeamGoals: "", awayTeamGoals: "" };
+    games.forEach((game) => {
+      // game.teamAwayName = decodeURI(game.teamAwayName!);
+      // game.teamHomeName = decodeURI(game.teamHomeName!);
+      betForms.value[game.gameId!] = {
+        userId: userId,
+        homeTeamGoals: "",
+        awayTeamGoals: "",
+      };
     });
   } catch (error) {
     console.error("Error fetching games", error);
   }
-})
+  try {
+    const response = await apiService.betApi.apiBetUserBetsGet(userId);
+    yourBets = response.data;
+  } catch (error) {
+    console.log(error);
+  }
+  isLoading.value = false;
+});
 
 function getBetForm(gameId: number) {
   return betForms.value[gameId];
@@ -53,9 +117,37 @@ function getBetForm(gameId: number) {
 function bet(gameId: number) {
   try {
     const betForm = betForms.value[gameId];
-    apiService.betApi.apiBetPlaceBetPost(parseInt(betForm.homeTeamGoals), parseInt(betForm.awayTeamGoals), gameId, betForm.userId);
+    apiService.betApi.apiBetPlaceBetPost(
+      parseInt(betForm.homeTeamGoals),
+      parseInt(betForm.awayTeamGoals),
+      gameId,
+      betForm.userId
+    );
   } catch (error) {
     console.log(error);
   }
 }
 </script>
+<style scoped>
+ion-input {
+  min-height: 0 !important;
+}
+ion-grid {
+  border: 1px solid;
+  border-radius: 7px;
+  margin: 20px;
+  padding: 15px;
+  box-shadow: 1px 3px 3px #ccc;
+}
+.game {
+  font-size: 17px;
+}
+
+.input-container {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+  display: flex;
+  align-self: center;
+}
+</style>

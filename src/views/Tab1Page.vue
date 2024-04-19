@@ -5,11 +5,10 @@
         <ion-title>Dashboard</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content>
-      <div v-if="isLoading">
-        Loading...
-      </div>
-      <div v-else>
+    <ion-content v-if="isLoading">
+      <ion-spinner ></ion-spinner>
+    </ion-content>
+    <ion-content v-else>
         <ul>
           <li v-for="game in games" :key="game.gameId">
             {{ game.teamHomeName }} {{ game.teamHomeGoals }} : {{ game.teamAwayGoals }}
@@ -42,14 +41,13 @@
             {{ leaderboard[leaderboard.length - 1].points }}
           </li>
         </ul>
-      </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import { onBeforeMount, ref } from "vue";
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from "@ionic/vue";
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonSpinner } from "@ionic/vue";
 import apiService from "@/services/apiService";
 import { User, Game } from "@/generated/api";
 

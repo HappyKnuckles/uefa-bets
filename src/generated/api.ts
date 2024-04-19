@@ -81,6 +81,31 @@ export interface Bet {
 /**
  * 
  * @export
+ * @interface BetDto
+ */
+export interface BetDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof BetDto
+     */
+    'homeTeamGoals'?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof BetDto
+     */
+    'awayTeamGoals'?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof BetDto
+     */
+    'betTimestamp'?: string | null;
+}
+/**
+ * 
+ * @export
  * @interface Community
  */
 export interface Community {
@@ -129,10 +154,16 @@ export interface CommunityMembersDto {
     'communityName'?: string | null;
     /**
      * 
-     * @type {Array<User>}
+     * @type {number}
      * @memberof CommunityMembersDto
      */
-    'members'?: Array<User> | null;
+    'communityPoints'?: number;
+    /**
+     * 
+     * @type {Array<UserDto>}
+     * @memberof CommunityMembersDto
+     */
+    'members'?: Array<UserDto> | null;
 }
 /**
  * 
@@ -188,6 +219,31 @@ export interface Game {
      * @memberof Game
      */
     'bets'?: Array<Bet> | null;
+}
+/**
+ * 
+ * @export
+ * @interface GameBetDto
+ */
+export interface GameBetDto {
+    /**
+     * 
+     * @type {BetDto}
+     * @memberof GameBetDto
+     */
+    'bet'?: BetDto;
+    /**
+     * 
+     * @type {string}
+     * @memberof GameBetDto
+     */
+    'homeTeamName'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof GameBetDto
+     */
+    'awayTeamName'?: string | null;
 }
 /**
  * 
@@ -268,6 +324,31 @@ export interface UserCommunity {
      * @memberof UserCommunity
      */
     'user'?: User;
+}
+/**
+ * 
+ * @export
+ * @interface UserDto
+ */
+export interface UserDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof UserDto
+     */
+    'points'?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
+    'name'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
+    'registrationDate'?: string;
 }
 
 /**
@@ -453,6 +534,40 @@ export const BetApiAxiosParamCreator = function (configuration?: Configuration) 
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiBetUserBetsGet: async (userId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/Bet/user-bets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -525,6 +640,18 @@ export const BetApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['BetApi.apiBetPut']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiBetUserBetsGet(userId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<GameBetDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiBetUserBetsGet(userId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BetApi.apiBetUserBetsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -581,6 +708,15 @@ export const BetApiFactory = function (configuration?: Configuration, basePath?:
          */
         apiBetPut(bet?: Bet, options?: any): AxiosPromise<void> {
             return localVarFp.apiBetPut(bet, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiBetUserBetsGet(userId?: string, options?: any): AxiosPromise<Array<GameBetDto>> {
+            return localVarFp.apiBetUserBetsGet(userId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -648,6 +784,17 @@ export class BetApi extends BaseAPI {
     public apiBetPut(bet?: Bet, options?: RawAxiosRequestConfig) {
         return BetApiFp(this.configuration).apiBetPut(bet, options).then((request) => request(this.axios, this.basePath));
     }
+
+    /**
+     * 
+     * @param {string} [userId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof BetApi
+     */
+    public apiBetUserBetsGet(userId?: string, options?: RawAxiosRequestConfig) {
+        return BetApiFp(this.configuration).apiBetUserBetsGet(userId, options).then((request) => request(this.axios, this.basePath));
+    }
 }
 
 
@@ -658,76 +805,6 @@ export class BetApi extends BaseAPI {
  */
 export const CommunityApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
-        /**
-         * 
-         * @param {string} communityId 
-         * @param {Community} [community] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        apiCommunityCommunityIdPointsPut: async (communityId: string, community?: Community, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'communityId' is not null or undefined
-            assertParamExists('apiCommunityCommunityIdPointsPut', 'communityId', communityId)
-            const localVarPath = `/api/Community/{communityId}/points`
-                .replace(`{${"communityId"}}`, encodeURIComponent(String(communityId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(community, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {string} communityId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        apiCommunityCommunityIdRankingGet: async (communityId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'communityId' is not null or undefined
-            assertParamExists('apiCommunityCommunityIdRankingGet', 'communityId', communityId)
-            const localVarPath = `/api/Community/{communityId}/ranking`
-                .replace(`{${"communityId"}}`, encodeURIComponent(String(communityId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
         /**
          * 
          * @param {*} [options] Override http request option.
@@ -895,6 +972,73 @@ export const CommunityApiAxiosParamCreator = function (configuration?: Configura
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {string} [communityId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiCommunityRankingGet: async (communityId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/Community/ranking`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (communityId !== undefined) {
+                localVarQueryParameter['communityId'] = communityId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {Community} [community] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiCommunitySetPointsPut: async (community?: Community, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/Community/set-points`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(community, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -905,31 +1049,6 @@ export const CommunityApiAxiosParamCreator = function (configuration?: Configura
 export const CommunityApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = CommunityApiAxiosParamCreator(configuration)
     return {
-        /**
-         * 
-         * @param {string} communityId 
-         * @param {Community} [community] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async apiCommunityCommunityIdPointsPut(communityId: string, community?: Community, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiCommunityCommunityIdPointsPut(communityId, community, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CommunityApi.apiCommunityCommunityIdPointsPut']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {string} communityId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async apiCommunityCommunityIdRankingGet(communityId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<User>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiCommunityCommunityIdRankingGet(communityId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CommunityApi.apiCommunityCommunityIdRankingGet']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
         /**
          * 
          * @param {*} [options] Override http request option.
@@ -990,6 +1109,30 @@ export const CommunityApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['CommunityApi.apiCommunityPut']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * 
+         * @param {string} [communityId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiCommunityRankingGet(communityId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommunityMembersDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiCommunityRankingGet(communityId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CommunityApi.apiCommunityRankingGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {Community} [community] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiCommunitySetPointsPut(community?: Community, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiCommunitySetPointsPut(community, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CommunityApi.apiCommunitySetPointsPut']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -1000,25 +1143,6 @@ export const CommunityApiFp = function(configuration?: Configuration) {
 export const CommunityApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
     const localVarFp = CommunityApiFp(configuration)
     return {
-        /**
-         * 
-         * @param {string} communityId 
-         * @param {Community} [community] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        apiCommunityCommunityIdPointsPut(communityId: string, community?: Community, options?: any): AxiosPromise<void> {
-            return localVarFp.apiCommunityCommunityIdPointsPut(communityId, community, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {string} communityId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        apiCommunityCommunityIdRankingGet(communityId: string, options?: any): AxiosPromise<Array<User>> {
-            return localVarFp.apiCommunityCommunityIdRankingGet(communityId, options).then((request) => request(axios, basePath));
-        },
         /**
          * 
          * @param {*} [options] Override http request option.
@@ -1064,6 +1188,24 @@ export const CommunityApiFactory = function (configuration?: Configuration, base
         apiCommunityPut(community?: Community, options?: any): AxiosPromise<void> {
             return localVarFp.apiCommunityPut(community, options).then((request) => request(axios, basePath));
         },
+        /**
+         * 
+         * @param {string} [communityId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiCommunityRankingGet(communityId?: string, options?: any): AxiosPromise<CommunityMembersDto> {
+            return localVarFp.apiCommunityRankingGet(communityId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {Community} [community] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiCommunitySetPointsPut(community?: Community, options?: any): AxiosPromise<void> {
+            return localVarFp.apiCommunitySetPointsPut(community, options).then((request) => request(axios, basePath));
+        },
     };
 };
 
@@ -1074,29 +1216,6 @@ export const CommunityApiFactory = function (configuration?: Configuration, base
  * @extends {BaseAPI}
  */
 export class CommunityApi extends BaseAPI {
-    /**
-     * 
-     * @param {string} communityId 
-     * @param {Community} [community] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CommunityApi
-     */
-    public apiCommunityCommunityIdPointsPut(communityId: string, community?: Community, options?: RawAxiosRequestConfig) {
-        return CommunityApiFp(this.configuration).apiCommunityCommunityIdPointsPut(communityId, community, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {string} communityId 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof CommunityApi
-     */
-    public apiCommunityCommunityIdRankingGet(communityId: string, options?: RawAxiosRequestConfig) {
-        return CommunityApiFp(this.configuration).apiCommunityCommunityIdRankingGet(communityId, options).then((request) => request(this.axios, this.basePath));
-    }
-
     /**
      * 
      * @param {*} [options] Override http request option.
@@ -1151,6 +1270,28 @@ export class CommunityApi extends BaseAPI {
     public apiCommunityPut(community?: Community, options?: RawAxiosRequestConfig) {
         return CommunityApiFp(this.configuration).apiCommunityPut(community, options).then((request) => request(this.axios, this.basePath));
     }
+
+    /**
+     * 
+     * @param {string} [communityId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CommunityApi
+     */
+    public apiCommunityRankingGet(communityId?: string, options?: RawAxiosRequestConfig) {
+        return CommunityApiFp(this.configuration).apiCommunityRankingGet(communityId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {Community} [community] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CommunityApi
+     */
+    public apiCommunitySetPointsPut(community?: Community, options?: RawAxiosRequestConfig) {
+        return CommunityApiFp(this.configuration).apiCommunitySetPointsPut(community, options).then((request) => request(this.axios, this.basePath));
+    }
 }
 
 
@@ -1161,6 +1302,40 @@ export class CommunityApi extends BaseAPI {
  */
 export const GameApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
+        /**
+         * 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiGameGamesWithoutBetsGet: async (userId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/Game/games-without-bets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
         /**
          * 
          * @param {*} [options] Override http request option.
@@ -1301,6 +1476,18 @@ export const GameApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiGameGamesWithoutBetsGet(userId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Game>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiGameGamesWithoutBetsGet(userId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['GameApi.apiGameGamesWithoutBetsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1358,6 +1545,15 @@ export const GameApiFactory = function (configuration?: Configuration, basePath?
     return {
         /**
          * 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiGameGamesWithoutBetsGet(userId?: string, options?: any): AxiosPromise<Array<Game>> {
+            return localVarFp.apiGameGamesWithoutBetsGet(userId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1401,6 +1597,17 @@ export const GameApiFactory = function (configuration?: Configuration, basePath?
  * @extends {BaseAPI}
  */
 export class GameApi extends BaseAPI {
+    /**
+     * 
+     * @param {string} [userId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof GameApi
+     */
+    public apiGameGamesWithoutBetsGet(userId?: string, options?: RawAxiosRequestConfig) {
+        return GameApiFp(this.configuration).apiGameGamesWithoutBetsGet(userId, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @param {*} [options] Override http request option.
@@ -1646,16 +1853,12 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @param {string} userId 
          * @param {string} [userName] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiUserUserIdRankGet: async (userId: string, userName?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('apiUserUserIdRankGet', 'userId', userId)
-            const localVarPath = `/api/User/{UserId}/rank`
-                .replace(`{${"UserId"}}`, encodeURIComponent(String(userId)));
+        apiUserRankGet: async (userName?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/User/rank`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -1764,15 +1967,14 @@ export const UserApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} userId 
          * @param {string} [userName] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiUserUserIdRankGet(userId: string, userName?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<User>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiUserUserIdRankGet(userId, userName, options);
+        async apiUserRankGet(userName?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<User>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiUserRankGet(userName, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['UserApi.apiUserUserIdRankGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['UserApi.apiUserRankGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -1839,13 +2041,12 @@ export const UserApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @param {string} userId 
          * @param {string} [userName] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiUserUserIdRankGet(userId: string, userName?: string, options?: any): AxiosPromise<User> {
-            return localVarFp.apiUserUserIdRankGet(userId, userName, options).then((request) => request(axios, basePath));
+        apiUserRankGet(userName?: string, options?: any): AxiosPromise<User> {
+            return localVarFp.apiUserRankGet(userName, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1923,14 +2124,13 @@ export class UserApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} userId 
      * @param {string} [userName] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof UserApi
      */
-    public apiUserUserIdRankGet(userId: string, userName?: string, options?: RawAxiosRequestConfig) {
-        return UserApiFp(this.configuration).apiUserUserIdRankGet(userId, userName, options).then((request) => request(this.axios, this.basePath));
+    public apiUserRankGet(userName?: string, options?: RawAxiosRequestConfig) {
+        return UserApiFp(this.configuration).apiUserRankGet(userName, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
