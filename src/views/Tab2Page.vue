@@ -9,19 +9,19 @@
       <ion-spinner></ion-spinner>
     </ion-content>
     <ion-content :fullscreen="true" v-else>
-      <h1>Your bets</h1>
+      <h2>Your bets</h2>
       <ion-grid v-for="bet in yourBets" :key="bet.bet?.betTimestamp!">
         <ion-row class="game">
           <ion-col class="ion-text-left">{{ bet.homeTeamName }}</ion-col>
           <ion-col class="ion-text-center">
             {{ bet.bet?.homeTeamGoals }}
             :
-            {{ bet.bet?.homeTeamGoals }}
+            {{ bet.bet?.awayTeamGoals }}
           </ion-col>
           <ion-col class="ion-text-right">{{ bet.awayTeamName }}</ion-col>
         </ion-row>
       </ion-grid>
-      <h1>Needs bets</h1>
+      <h2>Needs bets</h2>
       <ion-grid v-for="game in games" :key="game.gameId">
         <form
           @submit.prevent="() => bet(game.gameId!)"
@@ -90,8 +90,6 @@ onBeforeMount(async () => {
     games = response.data;
     // Initialize betForms for each game
     games.forEach((game) => {
-      // game.teamAwayName = decodeURI(game.teamAwayName!);
-      // game.teamHomeName = decodeURI(game.teamHomeName!);
       betForms.value[game.gameId!] = {
         userId: userId,
         homeTeamGoals: "",

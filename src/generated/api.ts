@@ -807,6 +807,79 @@ export const CommunityApiAxiosParamCreator = function (configuration?: Configura
     return {
         /**
          * 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiCommunityCommunitesWithoutUserGet: async (userId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/Community/communites-without-user`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} [userId] 
+         * @param {string} [communityName] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiCommunityCreateAndJoinCommunityPost: async (userId?: string, communityName?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/Community/create-and-join-community`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+            if (communityName !== undefined) {
+                localVarQueryParameter['communityName'] = communityName;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1051,6 +1124,31 @@ export const CommunityApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiCommunityCommunitesWithoutUserGet(userId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Community>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiCommunityCommunitesWithoutUserGet(userId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CommunityApi.apiCommunityCommunitesWithoutUserGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} [userId] 
+         * @param {string} [communityName] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiCommunityCreateAndJoinCommunityPost(userId?: string, communityName?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiCommunityCreateAndJoinCommunityPost(userId, communityName, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CommunityApi.apiCommunityCreateAndJoinCommunityPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1145,6 +1243,25 @@ export const CommunityApiFactory = function (configuration?: Configuration, base
     return {
         /**
          * 
+         * @param {string} [userId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiCommunityCommunitesWithoutUserGet(userId?: string, options?: any): AxiosPromise<Array<Community>> {
+            return localVarFp.apiCommunityCommunitesWithoutUserGet(userId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} [userId] 
+         * @param {string} [communityName] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiCommunityCreateAndJoinCommunityPost(userId?: string, communityName?: string, options?: any): AxiosPromise<void> {
+            return localVarFp.apiCommunityCreateAndJoinCommunityPost(userId, communityName, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1216,6 +1333,29 @@ export const CommunityApiFactory = function (configuration?: Configuration, base
  * @extends {BaseAPI}
  */
 export class CommunityApi extends BaseAPI {
+    /**
+     * 
+     * @param {string} [userId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CommunityApi
+     */
+    public apiCommunityCommunitesWithoutUserGet(userId?: string, options?: RawAxiosRequestConfig) {
+        return CommunityApiFp(this.configuration).apiCommunityCommunitesWithoutUserGet(userId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} [userId] 
+     * @param {string} [communityName] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CommunityApi
+     */
+    public apiCommunityCreateAndJoinCommunityPost(userId?: string, communityName?: string, options?: RawAxiosRequestConfig) {
+        return CommunityApiFp(this.configuration).apiCommunityCreateAndJoinCommunityPost(userId, communityName, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @param {*} [options] Override http request option.
