@@ -22,10 +22,10 @@
               {{ community.communityPoints }}
             </ion-badge>
           </ion-label>
-          <ion-button id="member-view">
+          <ion-button :id="'member-view-' + community.communityId">
             <ion-icon slot="icon-only" :icon="informationCircleOutline"></ion-icon>
           </ion-button>
-          <ion-popover trigger="member-view">
+          <ion-popover :trigger="'member-view-' + community.communityId">
             <ion-content>
               <ion-grid>
                 <ion-row v-for="user in community.members" :key="user.name!">

@@ -6,63 +6,53 @@
       </ion-toolbar>
     </ion-header>
     <ion-content v-if="isLoading">
-      <ion-spinner ></ion-spinner>
+      <ion-spinner></ion-spinner>
     </ion-content>
     <ion-content v-else>
-        <ul>
-          <li v-for="game in games" :key="game.gameId">
-            {{ game.teamHomeName }} {{ game.teamHomeGoals }} : {{ game.teamAwayGoals }}
-            {{ game.teamAwayName }}
-          </li>
-        </ul>
-        <ul>
-          <h2>Leaderboard</h2>
-          <li v-for="(user, index) in leaderboard.slice(0, 3)" :key="user.userId">
-            {{ index + 1 }}. {{ user.username }} {{ user.points }}
-          </li>
-          <li v-if="getCurrentUserRank().rankAbove && getCurrentUserRank().rank > 5">
-            {{ getCurrentUserRank().rank - 1 }}.
-            {{ getCurrentUserRank().rankAbove.username }}
-            {{ getCurrentUserRank().rankAbove.points }}
-          </li>
-          <li v-if="currentUser">
-            {{ getCurrentUserRank().rank }}. {{ currentUser.username }}
-            {{ currentUser.points }}
-          </li>
-
-          <li v-if="getCurrentUserRank().rankBelow && getCurrentUserRank().rank < leaderboard.length - 1">
-            {{ getCurrentUserRank().rank + 1 }}.
-            {{ getCurrentUserRank().rankBelow.username }}
-            {{ getCurrentUserRank().rankBelow.points }}
-          </li>
-
-          <li v-if="leaderboard.length > 3" :key="leaderboard.length">
-            {{ leaderboard.length }}. {{ leaderboard[leaderboard.length - 1].username }}
-            {{ leaderboard[leaderboard.length - 1].points }}
-          </li>
-        </ul>
-    </ion-content>
+      <ul>
+        <li v-for="game in games" :key="game.gameId">
+          {{ game.teamHomeName }} {{ game.teamHomeGoals }} : {{ game.teamAwayGoals }}
+          {{ game.teamAwayName }}
+        </li>
+      </ul>
+      <ion-list v-for="community in communityWithMembers" :key="community.communityId">
+        <ion-item> {{ community.communityName }} </ion-item>
+        <ion-item v-for="(user, index) in (community.communityId != null ? displayUsers[community.communityId] : [])" :key="user.name!">
+          {{ index + 1 }}. {{ user.name }} {{ user.points }}
+        </ion-item>
+      </ion-list>    </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import { onBeforeMount, ref } from "vue";
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonSpinner } from "@ionic/vue";
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonSpinner,
+  IonList,
+  IonItem,
+} from "@ionic/vue";
 import apiService from "@/services/apiService";
-import { User, Game } from "@/generated/api";
+import { User, Game, CommunityMembersDto, UserDto } from "@/generated/api";
 
 let games: Game[] = [];
-let leaderboard: User[] = [];
-const currentUserJson = sessionStorage.getItem("currentuser");
-let currentUser: User;
+const currentUser: User = JSON.parse(sessionStorage.getItem("currentuser")!);
+const displayUsers: { [key: string]: UserDto[] } = {};
+let communityWithMembers: CommunityMembersDto[] = [];
 const isLoading = ref(true);
 onBeforeMount(async () => {
   try {
-    const response = await apiService.userApi.apiUserGetLeaderboardGet();
-    const data = response.data;
-    leaderboard = data;
+    const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
+      currentUser.userId
+    );
+    communityWithMembers = response.data;
+    console.log(communityWithMembers);
   } catch (error) {
-    console.error("Error fetching community data:", error);
+    console.log(error);
   }
   try {
     const response = await apiService.gameApi.apiGameGet();
@@ -77,24 +67,40 @@ onBeforeMount(async () => {
   } catch (error) {
     console.error("Error fetchign games", error);
   }
-  currentUser = JSON.parse(currentUserJson!);
+  for (const community of communityWithMembers) {
+  if (community.communityId != null) {
+    displayUsers[community.communityId] = await getDisplayUsers(community);
+  }
+}
+
   isLoading.value = false;
 });
 
-function getCurrentUserRank(this: any) {
-  const currentUserIndex = this.leaderboard.findIndex(
-    (user: { userId: any }) => user.userId === this.currentUser.userId
-  );
-  const rankAbove = currentUserIndex > 0 ? this.leaderboard[currentUserIndex - 1] : null;
-  const rankBelow =
-    currentUserIndex < this.leaderboard.length - 1
-      ? this.leaderboard[currentUserIndex + 1]
-      : null;
-  return {
-    rank: currentUserIndex + 1,
-    rankAbove,
-    rankBelow,
-  };
+async function getDisplayUsers(community: CommunityMembersDto) {
+  const sortedMembers = community.members!;
+  console.log(community.communityName);
+  let topUsers = sortedMembers.slice(0, 3);
+
+  const lastUser = sortedMembers.slice(-1)[0];
+  topUsers.push(lastUser!);
+
+  while (topUsers.length < 7 && sortedMembers.length > 0) {
+    const user = sortedMembers.shift();
+    if (!topUsers.includes(user!)) {
+      topUsers.push(user!);
+    }
+  }
+
+  const pinnedUsers = JSON.parse(localStorage.getItem("pinnedUsers")!);
+  if (pinnedUsers.currentUser === currentUser.username) {
+    for (const user of pinnedUsers) {
+      if (!topUsers.includes(user)) {
+        topUsers.push(user);
+      }
+    }
+  }
+  topUsers = [...new Set(topUsers)];
+  return topUsers;
 }
 </script>
 
