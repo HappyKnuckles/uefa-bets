@@ -42,48 +42,92 @@
         </ion-row>
         <ion-row class="pagination">
           <ion-col class="ion-text-left">
-            <ion-button size="small" @click="prevPage" :disabled="currentPage === 1"
-              >Previous
+            <ion-button class="nav btn" size="small" @click="prevPage" :disabled="currentPage === 1"
+              ><ion-icon slot="icon-only" :icon="chevronBack"></ion-icon>
             </ion-button>
           </ion-col>
           <ion-col class="ion-text-center">
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <span> {{ currentPage }} of {{ totalPages }}</span>
           </ion-col>
           <ion-col class="ion-text-right">
             <ion-button
+            class="nav btn"
               size="small"
               @click="nextPage"
               :disabled="currentPage === totalPages"
-              >Next
+              ><ion-icon slot="icon-only" :icon="chevronForward"></ion-icon>
             </ion-button>
           </ion-col>
         </ion-row>
       </ion-grid>
 
-      <ion-grid>
-        <ion-row>
+      <ion-grid class="nameGrid">
+        <ion-row class="titleRow">
           <ion-col size="2">Rank</ion-col>
           <ion-col size="7">Name</ion-col>
           <ion-col>Points</ion-col>
         </ion-row>
-        <ion-row v-for="user in pagedLeaderboard" :key="user.name!">
-          <ion-col size="2">{{ user.rank }}.</ion-col>
-          <ion-col size="7">
+        <ion-row v-for="user in pagedLeaderboard" :key="user.name!" class="userRow">
+          <ion-col v-if="user.rank === 1" class="golden" size="2">{{ user.rank }}.</ion-col>
+          <ion-col v-else-if="user.rank === 2" class="silver" size="2">{{ user.rank }}.</ion-col>
+          <ion-col v-else-if="user.rank === 3" class="bronze" size="2">{{ user.rank }}.</ion-col>
+          <ion-col v-else size="2">{{ user.rank }}.</ion-col>          
+          <ion-col size="7"  v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
-            <span v-if="user.name === currentUser.username">(you)</span>
-            <ion-button v-if="user.name != currentUser.username && selectedCommunity != ''" class="pinbtn" @click="togglePin(user, selectedCommunity)">
-              <ion-icon slot="icon-only" :icon="isPinned(user, selectedCommunity) ? heart : heartOutline"></ion-icon>
+            <ion-button
+              v-if="user.name != currentUser.username && selectedCommunity != ''"
+              class="pinbtn"
+              @click="togglePin(user, selectedCommunity)"
+            >
+              <ion-icon
+                slot="icon-only"
+                :icon="isPinned(user) ? heart : heartOutline"
+              ></ion-icon>
             </ion-button>
           </ion-col>
+          <ion-col size="7" v-else>
+            {{ user.name }}
+            <ion-button
+              v-if="user.name != currentUser.username && selectedCommunity != ''"
+              class="pinbtn"
+              @click="togglePin(user, selectedCommunity)"
+            >
+              <ion-icon
+                slot="icon-only"
+                :icon="isPinned(user) ? heart : heartOutline"
+              ></ion-icon>
+            </ion-button>
+          </ion-col>
+
           <ion-col>{{ user.points }}</ion-col>
         </ion-row>
+        <!-- <ion-row class="userRow" v-if="currentUser.rank">
+          <ion-col size="2">
+            <ion-col v-if="currentUser.rank === 1" class="golden">{{ currentUser.rank }}.</ion-col>
+            <ion-col v-else-if="currentUser.rank === 2" class="silver">{{ currentUser.rank }}.</ion-col>
+            <ion-col v-else-if="currentUser.rank === 3" class="bronze">{{ currentUser.rank }}.</ion-col>
+            <ion-col v-else>{{ currentUser.rank }}.</ion-col>
+          </ion-col>
+          <ion-col size="7">{{ currentUser.username }}</ion-col>
+          <ion-col>{{ currentUser.points }}</ion-col>
+        </ion-row>
+        <ion-row v-for="user in pinnedUsers" :key="user" class="userRow">
+          <ion-col size="2">{{ user.rank }}.</ion-col>
+          <ion-col size="7">{{ user.userName }}</ion-col>
+          <ion-col>{{ user.points }}</ion-col>
+        </ion-row>
+        <ion-row class="userRow" v-if="lastUser.rank">
+          <ion-col size="2">{{ lastUser.rank }}.</ion-col>
+          <ion-col size="7">{{ lastUser.name }}</ion-col>
+          <ion-col>{{ lastUser.points }}</ion-col>
+        </ion-row> -->
       </ion-grid>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { Community, User, UserDto } from "@/generated";
+import { Community, UserDto } from "@/generated";
 import {
   IonInput,
   IonGrid,
@@ -103,17 +147,20 @@ import {
 } from "@ionic/vue";
 import apiService from "@/services/apiService";
 import { ref, onBeforeMount, computed } from "vue";
-import { heart, heartOutline } from "ionicons/icons";
+import { chevronBack, chevronForward, heart, heartOutline } from "ionicons/icons";
 
 const selectedCommunity = ref("");
-const currentUser: User = JSON.parse(sessionStorage.getItem("currentuser")!);
+const currentUser = JSON.parse(sessionStorage.getItem("currentuser")!);
 let communities: Community[] = [];
 const leaderboard = ref();
 const isLoading = ref(true);
 const pageSize = ref(10);
 const currentPage = ref(1);
 const searchQuery = ref("");
-const pinnedUsers = ref(JSON.parse(localStorage.getItem('pinnedUsers') || '[]'));
+const pinnedUsers = ref(
+  JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
+);
+const lastUser = ref();
 
 onBeforeMount(async () => {
   try {
@@ -127,19 +174,42 @@ onBeforeMount(async () => {
 });
 
 const togglePin = (user: UserDto, communityName: string) => {
-  const pinIndex = pinnedUsers.value.findIndex((pin: { user: string | null | undefined; currentUser: any; community: string | null | undefined; }) => pin.user === user.name && pin.currentUser === currentUser.username && pin.community === communityName);
-  
+  const pinIndex = pinnedUsers.value.findIndex(
+    (pin: {
+      userName: string | null | undefined;
+      currentUserName: any;
+      communityName: string | null | undefined;
+      rank: number | null | undefined;
+    }) => pin.userName === user.name && pin.currentUserName === currentUser.username
+  );
+
   if (pinIndex > -1) {
     pinnedUsers.value.splice(pinIndex, 1);
   } else {
-    pinnedUsers.value.push({ user: user.name, currentUser: currentUser.username, community: communityName });
+    pinnedUsers.value.push({
+      userName: user.name,
+      points: user.points,
+      currentUserName: currentUser.username,
+      communityName: communityName,
+      rank: null,
+    });
   }
-  
-  localStorage.setItem('pinnedUsers', JSON.stringify(pinnedUsers.value));
+
+  localStorage.setItem(
+    `pinnedUsers_${currentUser.username}`,
+    JSON.stringify(pinnedUsers.value)
+  );
 };
 
-const isPinned = (user: UserDto, communityName: string) => {
-  return pinnedUsers.value.some((pin: { user: string | null | undefined; currentUser: any; community: string | null | undefined; }) => pin.user === user.name && pin.currentUser === currentUser.username && pin.community === communityName);
+const isPinned = (user: UserDto) => {
+  return pinnedUsers.value.some(
+    (pin: {
+      userName: string | null | undefined;
+      currentUserName: any;
+      communityName: string | null | undefined;
+      rank: number | null | undefined;
+    }) => pin.userName === user.name && pin.currentUserName === currentUser.username
+  );
 };
 
 const getCommunityUserRanking = async (communityId: string | null) => {
@@ -149,6 +219,29 @@ const getCommunityUserRanking = async (communityId: string | null) => {
       ...user,
       rank: index + 1,
     }));
+    const currentUserIndex = leaderboard.value.findIndex(
+      (user: { name: any }) => user.name === currentUser.username
+    );
+    currentUser.rank = leaderboard.value[currentUserIndex].rank;
+    lastUser.value = leaderboard.value[leaderboard.value.length - 1];
+    pinnedUsers.value.forEach(
+      (pinnedUser: {
+        userName: any;
+        points: any;
+        currentUserName: any;
+        communityName: any;
+        rank: any;
+      }) => {
+        const pinnedUserIndex = leaderboard.value.findIndex(
+          (user: { name: any }) => user.name === pinnedUser.userName
+        );
+        if (pinnedUserIndex !== -1) {
+          pinnedUser.rank = leaderboard.value[pinnedUserIndex].rank;
+        } else {
+          pinnedUser.rank = undefined;
+        }
+      }
+    );
   } catch (error) {
     console.log(error);
   }
@@ -200,10 +293,48 @@ const prevPage = () => {
   --background: none;
   color: white;
   font-size: 14px;
-
 }
 .pagination {
   display: flex;
   align-items: center;
+}
+
+ion-grid{
+  background-color: #141211;
+  margin: 10px;
+  border-radius: 7px;
+}
+
+.nameGrid{
+  box-shadow: 1px 1px 3px gray;
+}
+ion-row{
+  padding: 5px;
+}
+.userRow:not(:last-child){
+  border-bottom: 1px solid #ff496117;
+}
+.titleRow{
+  border-radius: 7px;
+  background-color: #272727;
+  font-weight: 600;
+}
+
+.nav{
+  --background: none;
+  color: var(--ion-color-primary);
+}
+
+.golden {
+  color: gold;
+}
+.silver {
+  color: silver;
+}
+.bronze {
+  color: #cd7f32; 
+}
+.red{
+  color: var(--ion-color-primary);
 }
 </style>

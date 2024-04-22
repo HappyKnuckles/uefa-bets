@@ -44,7 +44,11 @@ const currentUser: User = JSON.parse(sessionStorage.getItem("currentuser")!);
 const displayUsers: { [key: string]: UserDto[] } = {};
 let communityWithMembers: CommunityMembersDto[] = [];
 const isLoading = ref(true);
+const pinnedUsers = ref(
+  JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
+);
 onBeforeMount(async () => {
+  console.log(currentUser)
   try {
     const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
       currentUser.userId
@@ -91,9 +95,8 @@ async function getDisplayUsers(community: CommunityMembersDto) {
     }
   }
 
-  const pinnedUsers = JSON.parse(localStorage.getItem("pinnedUsers")!);
-  if (pinnedUsers.currentUser === currentUser.username) {
-    for (const user of pinnedUsers) {
+  if (pinnedUsers.value.currentUserName === currentUser.username) {
+    for (const user of pinnedUsers.value) {
       if (!topUsers.includes(user)) {
         topUsers.push(user);
       }

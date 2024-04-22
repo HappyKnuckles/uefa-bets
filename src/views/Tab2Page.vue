@@ -131,11 +131,12 @@ ion-input {
   min-height: 0 !important;
 }
 ion-grid {
-  border: 1px solid;
   border-radius: 7px;
   margin: 20px;
   padding: 15px;
-  box-shadow: 1px 3px 3px #ccc;
+  background-color: #141211;
+  box-shadow: 1px 1px 3px gray;
+
 }
 .game {
   font-size: 17px;
