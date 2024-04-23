@@ -219,6 +219,22 @@ const getCommunityUserRanking = async (communityId: string | null) => {
       ...user,
       rank: index + 1,
     }));
+
+    // Try to implement
+
+    // const data = response.data.members;
+    // let prevValue = 0;
+    // let currentRank = 1;
+    // data.forEach((user, index) => {
+    //   if(user.points != prevValue){
+    //     currentRank = index + 1;
+    //   }
+    //   leaderboard.value.push({
+    //     ...user,
+    //     rank: currentRank
+    //   });
+    //   prevValue = user.points;
+    // });
     const currentUserIndex = leaderboard.value.findIndex(
       (user: { name: any }) => user.name === currentUser.username
     );
@@ -289,11 +305,13 @@ const prevPage = () => {
     justify-content: flex-end;
   }
 }
+
 .pinbtn {
   --background: none;
   color: white;
   font-size: 14px;
 }
+
 .pagination {
   display: flex;
   align-items: center;
@@ -306,14 +324,17 @@ ion-grid{
 }
 
 .nameGrid{
-  box-shadow: 1px 1px 3px gray;
+  border: 1px solid #333232;
 }
+
 ion-row{
   padding: 5px;
 }
+
 .userRow:not(:last-child){
   border-bottom: 1px solid #ff496117;
 }
+
 .titleRow{
   border-radius: 7px;
   background-color: #272727;
@@ -328,12 +349,15 @@ ion-row{
 .golden {
   color: gold;
 }
+
 .silver {
   color: silver;
 }
+
 .bronze {
   color: #cd7f32; 
 }
+
 .red{
   color: var(--ion-color-primary);
 }

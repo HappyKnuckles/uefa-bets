@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-title>Communities</ion-title>
-        <ion-button slot="end" @click="createAlert">
+        <ion-button slot="end" @click="createAlert" class="addBtn">
           <ion-icon slot="icon-only" :icon="addOutline"></ion-icon>
         </ion-button>
       </ion-toolbar>
@@ -25,6 +25,7 @@
           <ion-button :id="'member-view-' + community.communityId">
             <ion-icon slot="icon-only" :icon="informationCircleOutline"></ion-icon>
           </ion-button>
+          
           <ion-popover :trigger="'member-view-' + community.communityId">
             <ion-content>
               <ion-grid>
@@ -34,6 +35,7 @@
               </ion-grid>
             </ion-content>
           </ion-popover>
+          
         </ion-item>
       </ion-list>
       <h2>All Communities</h2>
@@ -165,4 +167,12 @@ async function joinCommunity(communityId: string) {
   }
 }
 </script>
-<style scoped></style>
+<style scoped>
+.addBtn{
+  --background: none;
+  
+  ion-icon{
+    color: white;
+  }
+}
+</style>

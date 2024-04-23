@@ -135,8 +135,7 @@ ion-grid {
   margin: 20px;
   padding: 15px;
   background-color: #141211;
-  box-shadow: 1px 1px 3px gray;
-
+  border: 1px solid #333232;
 }
 .game {
   font-size: 17px;
