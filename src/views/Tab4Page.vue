@@ -42,7 +42,11 @@
         </ion-row>
         <ion-row class="pagination">
           <ion-col class="ion-text-left">
-            <ion-button class="nav btn" size="small" @click="prevPage" :disabled="currentPage === 1"
+            <ion-button
+              class="nav btn"
+              size="small"
+              @click="prevPage"
+              :disabled="currentPage === 1"
               ><ion-icon slot="icon-only" :icon="chevronBack"></ion-icon>
             </ion-button>
           </ion-col>
@@ -51,7 +55,7 @@
           </ion-col>
           <ion-col class="ion-text-right">
             <ion-button
-            class="nav btn"
+              class="nav btn"
               size="small"
               @click="nextPage"
               :disabled="currentPage === totalPages"
@@ -68,11 +72,17 @@
           <ion-col>Points</ion-col>
         </ion-row>
         <ion-row v-for="user in pagedLeaderboard" :key="user.name!" class="userRow">
-          <ion-col v-if="user.rank === 1" class="golden" size="2">{{ user.rank }}.</ion-col>
-          <ion-col v-else-if="user.rank === 2" class="silver" size="2">{{ user.rank }}.</ion-col>
-          <ion-col v-else-if="user.rank === 3" class="bronze" size="2">{{ user.rank }}.</ion-col>
-          <ion-col v-else size="2">{{ user.rank }}.</ion-col>          
-          <ion-col size="7"  v-if="user.name === currentUser.username" class="red">
+          <ion-col v-if="user.rank === 1" class="golden" size="2"
+            >{{ user.rank }}.</ion-col
+          >
+          <ion-col v-else-if="user.rank === 2" class="silver" size="2"
+            >{{ user.rank }}.</ion-col
+          >
+          <ion-col v-else-if="user.rank === 3" class="bronze" size="2"
+            >{{ user.rank }}.</ion-col
+          >
+          <ion-col v-else size="2">{{ user.rank }}.</ion-col>
+          <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
             <ion-button
               v-if="user.name != currentUser.username && selectedCommunity != ''"
@@ -148,6 +158,7 @@ import {
 import apiService from "@/services/apiService";
 import { ref, onBeforeMount, computed } from "vue";
 import { chevronBack, chevronForward, heart, heartOutline } from "ionicons/icons";
+const socket = new WebSocket("wss://localhost:44320/allHub");
 
 const selectedCommunity = ref("");
 const currentUser = JSON.parse(sessionStorage.getItem("currentuser")!);
@@ -161,7 +172,28 @@ const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
 const lastUser = ref();
+socket.onopen = () => {
+  console.log("WebSocket connection opened");
+};
 
+// socket.onmessage = (event) => {
+//   console.log("Received message from WebSocket:", event.data);
+//   const { communityMembers } = JSON.parse(event.data);
+//   updateLeaderboard(communityMembers);
+// };
+
+socket.onclose = () => {
+  console.log("WebSocket connection closed");
+};
+
+socket.onerror = (error) => {
+  console.error("WebSocket error:", error);
+};
+
+// const updateLeaderboard = (communityMembers: any) => {
+//   // Update leaderboard with received data
+//   leaderboard.value = communityMembers;
+// };
 onBeforeMount(async () => {
   try {
     const response = await apiService.communityApi.apiCommunityGet();
@@ -317,31 +349,31 @@ const prevPage = () => {
   align-items: center;
 }
 
-ion-grid{
+ion-grid {
   background-color: #141211;
   margin: 10px;
   border-radius: 7px;
 }
 
-.nameGrid{
+.nameGrid {
   border: 1px solid #333232;
 }
 
-ion-row{
+ion-row {
   padding: 5px;
 }
 
-.userRow:not(:last-child){
+.userRow:not(:last-child) {
   border-bottom: 1px solid #ff496117;
 }
 
-.titleRow{
+.titleRow {
   border-radius: 7px;
   background-color: #272727;
   font-weight: 600;
 }
 
-.nav{
+.nav {
   --background: none;
   color: var(--ion-color-primary);
 }
@@ -355,10 +387,10 @@ ion-row{
 }
 
 .bronze {
-  color: #cd7f32; 
+  color: #cd7f32;
 }
 
-.red{
+.red {
   color: var(--ion-color-primary);
 }
 </style>
