@@ -14,18 +14,21 @@
 
     <ion-content :fullscreen="true" v-else>
       <h2>Your Communities</h2>
-      <ion-list :inset="true">
-        <ion-item v-for="community in userCommunities" :key="community.communityId!">
-          <ion-label>
-            {{ community.communityName }}
+      <ion-grid v-for="community in userCommunities" :key="community.communityId!">
+        <ion-row class="titleRow">
+          <ion-col size="10">
+            <ion-label>
+              {{ community.communityName }}
+            </ion-label>
             <ion-badge>
               {{ community.communityPoints }}
             </ion-badge>
-          </ion-label>
-          <ion-button :id="'member-view-' + community.communityId">
-            <ion-icon slot="icon-only" :icon="informationCircleOutline"></ion-icon>
-          </ion-button>
-          
+          </ion-col>
+          <ion-col>
+            <ion-button :id="'member-view-' + community.communityId" size="small" class="actionBtn">
+              <ion-icon slot="icon-only" :icon="informationCircleOutline"></ion-icon>
+            </ion-button>
+          </ion-col>
           <ion-popover :trigger="'member-view-' + community.communityId">
             <ion-content>
               <ion-grid>
@@ -35,24 +38,26 @@
               </ion-grid>
             </ion-content>
           </ion-popover>
-          
-        </ion-item>
-      </ion-list>
+        </ion-row>
+      </ion-grid>
       <h2>All Communities</h2>
-      <ion-list :inset="true">
-        <ion-item v-for="community in allCommunities" :key="community.communityId">
-          <ion-label>
-            {{ community.communityName }}
+      <ion-grid v-for="community in allCommunities" :key="community.communityId">
+        <ion-row class="titleRow">
+          <ion-col size="10">
+            <ion-label>
+              {{ community.communityName }}
+            </ion-label>
             <ion-badge>
               {{ community.communityPoints }}
             </ion-badge>
-          </ion-label>
-
-          <ion-button @click="joinCommunity(community.communityId!)" slot="end">
-            Join
-          </ion-button>
-        </ion-item>
-      </ion-list>
+          </ion-col>
+          <ion-col>
+            <ion-button @click="joinCommunity(community.communityId!)" size="small" class="actionBtn">
+              Join
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </ion-content>
   </ion-page>
 </template>
@@ -60,7 +65,7 @@
 <script setup lang="ts">
 import {
   IonPage,
-  IonItem,
+  IonCol,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -69,20 +74,16 @@ import {
   IonButton,
   IonSpinner,
   alertController,
-  IonList,
-  IonLabel,
   IonBadge,
   IonPopover,
   IonRow,
-  IonGrid
+  IonGrid,
+  IonLabel,
 } from "@ionic/vue";
 import apiService from "@/services/apiService";
 import { Community, CommunityMembersDto, User } from "@/generated";
 import { onBeforeMount, ref } from "vue";
-import {
-  addOutline,
-  informationCircleOutline,
-} from "ionicons/icons";
+import { addOutline, informationCircleOutline } from "ionicons/icons";
 
 const currentUserJson = sessionStorage.getItem("currentuser");
 const currentUser: User = JSON.parse(currentUserJson!);
@@ -108,21 +109,20 @@ const createAlertController = async () => {
     ],
     buttons: [
       {
-        text: 'Cancel',
-        role: 'cancel'
+        text: "Cancel",
+        role: "cancel",
       },
       {
-        text: 'Create',
+        text: "Create",
         handler: (data) => {
           handleAlertInput(data.communityname);
-        }
-      }
-    ]
+        },
+      },
+    ],
   });
 
   return alert;
 };
-
 
 const handleAlertInput = async (communityname: string | undefined) => {
   try {
@@ -130,6 +130,8 @@ const handleAlertInput = async (communityname: string | undefined) => {
       currentUser.userId,
       communityname
     );
+    await getCommunites();
+    await getUserCommunities();
   } catch (error) {
     console.log(error);
   }
@@ -137,24 +139,32 @@ const handleAlertInput = async (communityname: string | undefined) => {
 
 onBeforeMount(async () => {
   try {
-    const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
-      currentUser.userId
-    );
-    const data = response.data;
-    userCommunities = data;
+    await getUserCommunities();
   } catch (error) {
     console.log("Error fetching communities", error);
   }
   try {
-    const response = await apiService.communityApi.apiCommunityCommunitesWithoutUserGet(
-      currentUser.userId
-    );
-    allCommunities = response.data;
+    await getCommunites();
   } catch (error) {
     console.log(error);
   }
   isLoading.value = false;
 });
+
+async function getUserCommunities() {
+  const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
+    currentUser.userId
+  );
+  const data = response.data;
+  userCommunities = data;
+}
+
+async function getCommunites() {
+  const response = await apiService.communityApi.apiCommunityCommunitesWithoutUserGet(
+    currentUser.userId
+  );
+  allCommunities = response.data;
+}
 
 async function joinCommunity(communityId: string) {
   try {
@@ -162,17 +172,40 @@ async function joinCommunity(communityId: string) {
       currentUser.userId,
       communityId
     );
+    await getUserCommunities();
+    await getCommunites();
   } catch (error) {
     console.log(error);
   }
 }
 </script>
 <style scoped>
-.addBtn{
+.addBtn {
   --background: none;
-  
-  ion-icon{
+
+  ion-icon {
     color: white;
   }
+}
+.titleRow {
+  display: flex;
+  align-items: center;
+
+  ion-label{
+    font-size: 17px;
+    margin: 0 5px;
+    font-weight: 600;
+  }
+}
+
+.actionBtn{
+  font-size: 14px;
+}
+
+ion-grid {
+  border: 1px solid #333232;
+  background-color: #141211;
+  margin: 10px;
+  border-radius: 7px;
 }
 </style>

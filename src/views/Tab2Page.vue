@@ -70,7 +70,7 @@ import {
   IonRow,
   IonGrid,
   IonCol,
-  IonSpinner
+  IonSpinner,
 } from "@ionic/vue";
 import apiService from "@/services/apiService";
 import { onBeforeMount, ref } from "vue";
@@ -86,33 +86,42 @@ const isLoading = ref(true);
 
 onBeforeMount(async () => {
   try {
-    const response = await apiService.gameApi.apiGameGamesWithoutBetsGet(userId);
-    games = response.data;
-    // Initialize betForms for each game
-    games.forEach((game) => {
-      betForms.value[game.gameId!] = {
-        userId: userId,
-        homeTeamGoals: "",
-        awayTeamGoals: "",
-      };
-    });
+    await getBetlessGames();
   } catch (error) {
     console.error("Error fetching games", error);
   }
   try {
-    const response = await apiService.betApi.apiBetUserBetsGet(userId);
-    yourBets = response.data;
+    await getBets();
   } catch (error) {
     console.log(error);
   }
   isLoading.value = false;
 });
 
+async function getBets(){
+  const response = await apiService.betApi.apiBetUserBetsGet(userId);
+    yourBets = response.data;
+
+}
+
+async function getBetlessGames() {
+  const response = await apiService.gameApi.apiGameGamesWithoutBetsGet(userId);
+  games = response.data;
+  // Initialize betForms for each game
+  games.forEach((game) => {
+    betForms.value[game.gameId!] = {
+      userId: userId,
+      homeTeamGoals: "",
+      awayTeamGoals: "",
+    };
+  });
+}
+
 function getBetForm(gameId: number) {
   return betForms.value[gameId];
 }
 
-function bet(gameId: number) {
+async function bet(gameId: number) {
   try {
     const betForm = betForms.value[gameId];
     apiService.betApi.apiBetPlaceBetPost(
@@ -121,6 +130,8 @@ function bet(gameId: number) {
       gameId,
       betForm.userId
     );
+    await getBetlessGames();
+    await getBets();
   } catch (error) {
     console.log(error);
   }
@@ -132,7 +143,7 @@ ion-input {
 }
 ion-grid {
   border-radius: 7px;
-  margin: 20px;
+  margin: 15px;
   padding: 15px;
   background-color: #141211;
   border: 1px solid #333232;

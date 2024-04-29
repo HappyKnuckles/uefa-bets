@@ -73,14 +73,14 @@
         </ion-row>
         <ion-row v-for="user in pagedLeaderboard" :key="user.name!" class="userRow">
           <ion-col v-if="user.rank === 1" class="golden" size="2"
-            >{{ user.rank }}.</ion-col
-          >
+            >{{ user.rank }}.
+          </ion-col>
           <ion-col v-else-if="user.rank === 2" class="silver" size="2"
-            >{{ user.rank }}.</ion-col
-          >
+            >{{ user.rank }}.
+          </ion-col>
           <ion-col v-else-if="user.rank === 3" class="bronze" size="2"
-            >{{ user.rank }}.</ion-col
-          >
+            >{{ user.rank }}.
+          </ion-col>
           <ion-col v-else size="2">{{ user.rank }}.</ion-col>
           <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
@@ -174,13 +174,17 @@ const pinnedUsers = ref(
 const lastUser = ref();
 socket.onopen = () => {
   console.log("WebSocket connection opened");
+  const endChar = String.fromCharCode(30);
+
+  socket.send(`{"protocol":"json","version":1}${endChar}`);
 };
 
-// socket.onmessage = (event) => {
-//   console.log("Received message from WebSocket:", event.data);
-//   const { communityMembers } = JSON.parse(event.data);
-//   updateLeaderboard(communityMembers);
-// };
+socket.onmessage = async (event) => {
+  console.log("Received message from WebSocket:", event.data);
+  if (event.data === '{"type":1,"target":"getGames","arguments":[]}\u001e') {
+    await getCommunityUserRanking(selectedCommunity.value);
+  }
+};
 
 socket.onclose = () => {
   console.log("WebSocket connection closed");
@@ -190,10 +194,6 @@ socket.onerror = (error) => {
   console.error("WebSocket error:", error);
 };
 
-// const updateLeaderboard = (communityMembers: any) => {
-//   // Update leaderboard with received data
-//   leaderboard.value = communityMembers;
-// };
 onBeforeMount(async () => {
   try {
     const response = await apiService.communityApi.apiCommunityGet();
@@ -204,7 +204,7 @@ onBeforeMount(async () => {
   }
   isLoading.value = false;
 });
-
+3;
 const togglePin = (user: UserDto, communityName: string) => {
   const pinIndex = pinnedUsers.value.findIndex(
     (pin: {
