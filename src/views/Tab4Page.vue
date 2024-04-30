@@ -247,26 +247,21 @@ const isPinned = (user: UserDto) => {
 const getCommunityUserRanking = async (communityId: string | null) => {
   try {
     const response = await apiService.communityApi.apiCommunityRankingGet(communityId!);
-    leaderboard.value = response.data.members!.map((user, index) => ({
-      ...user,
-      rank: index + 1,
-    }));
 
-    // Try to implement
+    let prevValue = 0;
+    let currentRank = 1;
+    leaderboard.value = response.data.members!.reduce((acc: any[], user, index) => {
+      if (user.points !== prevValue) {
+        currentRank = index + 1;
+        prevValue = user.points!;
+      }
+      acc.push({
+        ...user,
+        rank: currentRank,
+      });
+      return acc;
+    }, []);
 
-    // const data = response.data.members;
-    // let prevValue = 0;
-    // let currentRank = 1;
-    // data.forEach((user, index) => {
-    //   if(user.points != prevValue){
-    //     currentRank = index + 1;
-    //   }
-    //   leaderboard.value.push({
-    //     ...user,
-    //     rank: currentRank
-    //   });
-    //   prevValue = user.points;
-    // });
     const currentUserIndex = leaderboard.value.findIndex(
       (user: { name: any }) => user.name === currentUser.username
     );
@@ -298,6 +293,7 @@ const getCommunityUserRanking = async (communityId: string | null) => {
 const performSearch = () => {
   currentPage.value = 1;
 };
+
 
 const totalPages = computed(() => Math.ceil(leaderboard.value.length / pageSize.value));
 
