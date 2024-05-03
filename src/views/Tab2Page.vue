@@ -75,8 +75,8 @@ import {
 import apiService from "@/services/apiService";
 import { onBeforeMount, ref } from "vue";
 
-let games: Game[] = [];
-let yourBets: GameBetDto[] = [];
+const games = ref<Game[]>([]);
+const yourBets = ref<GameBetDto[]>([]);
 const currentUser: User = JSON.parse(sessionStorage.getItem("currentuser")!);
 const userId: string = currentUser.userId!;
 const betForms = ref<{
@@ -100,15 +100,14 @@ onBeforeMount(async () => {
 
 async function getBets(){
   const response = await apiService.betApi.apiBetUserBetsGet(userId);
-    yourBets = response.data;
-
+    yourBets.value = response.data;
 }
 
 async function getBetlessGames() {
   const response = await apiService.gameApi.apiGameGamesWithoutBetsGet(userId);
-  games = response.data;
+  games.value = response.data;
   // Initialize betForms for each game
-  games.forEach((game) => {
+  games.value.forEach((game) => {
     betForms.value[game.gameId!] = {
       userId: userId,
       homeTeamGoals: "",

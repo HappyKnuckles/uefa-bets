@@ -87,8 +87,8 @@ import { addOutline, informationCircleOutline } from "ionicons/icons";
 
 const currentUserJson = sessionStorage.getItem("currentuser");
 const currentUser: User = JSON.parse(currentUserJson!);
-let userCommunities: CommunityMembersDto[] = [];
-let allCommunities: Community[] = [];
+const userCommunities = ref<CommunityMembersDto[]>([]);
+const allCommunities = ref<Community[]>([]);
 const isLoading = ref(true);
 
 const createAlert = async () => {
@@ -156,14 +156,14 @@ async function getUserCommunities() {
     currentUser.userId
   );
   const data = response.data;
-  userCommunities = data;
+  userCommunities.value = data;
 }
 
 async function getCommunites() {
   const response = await apiService.communityApi.apiCommunityCommunitesWithoutUserGet(
     currentUser.userId
   );
-  allCommunities = response.data;
+  allCommunities.value = response.data;
 }
 
 async function joinCommunity(communityId: string) {

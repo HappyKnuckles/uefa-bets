@@ -137,6 +137,7 @@ async function getUserCommunities() {
   const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
     currentUser.userId
   );
+  // why is this not the same as api response?
   communityWithMembers.value = response.data;
 }
 
@@ -153,6 +154,7 @@ async function getGames() {
 }
 
 async function getDisplayUsers(community: CommunityMembersDto) {
+  // this displays a wrong order
   const sortedMembers = community.members!;
   let topUsers = sortedMembers.slice(0, 3);
 
