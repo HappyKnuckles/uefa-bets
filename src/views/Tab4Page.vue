@@ -158,9 +158,8 @@ import {
 import apiService from "@/services/apiService";
 import { ref, onBeforeMount, computed } from "vue";
 import { chevronBack, chevronForward, heart, heartOutline } from "ionicons/icons";
-import store from '@/store'
-
-const socket = new WebSocket("wss://localhost:44320/allHub");
+import { useStore } from "vuex";
+const store = useStore();
 
 const selectedCommunity = ref("");
 const currentUser = store.getters.getUser;
@@ -174,28 +173,16 @@ const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
 const lastUser = ref();
-socket.onopen = () => {
-  console.log("WebSocket connection opened");
-  const endChar = String.fromCharCode(30);
 
-  socket.send(`{"protocol":"json","version":1}${endChar}`);
-};
-
-socket.onmessage = async (event) => {
-  console.log("Received message from WebSocket:", event.data);
-  // === "{\"type\":1,\"target\":\"getGames\",\"arguments\":[]}\u001e"
-  if (event.data.includes("getGames")) {
-    await getCommunityUserRanking(selectedCommunity.value);
+store.dispatch("initWebSocket");
+store.watch(
+  (state) => state.message,
+  async (newMessage) => {
+    if (newMessage.includes("getCommunityUserRanking")) {
+      await getCommunityUserRanking(selectedCommunity.value);
+    }
   }
-};
-
-socket.onclose = () => {
-  console.log("WebSocket connection closed");
-};
-
-socket.onerror = (error) => {
-  console.error("WebSocket error:", error);
-};
+);
 
 onBeforeMount(async () => {
   try {
@@ -207,7 +194,7 @@ onBeforeMount(async () => {
   }
   isLoading.value = false;
 });
-3;
+
 const togglePin = (user: UserDto, communityName: string) => {
   const pinIndex = pinnedUsers.value.findIndex(
     (pin: {
@@ -296,7 +283,6 @@ const getCommunityUserRanking = async (communityId: string | null) => {
 const performSearch = () => {
   currentPage.value = 1;
 };
-
 
 const totalPages = computed(() => Math.ceil(leaderboard.value.length / pageSize.value));
 

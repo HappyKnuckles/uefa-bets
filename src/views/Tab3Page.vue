@@ -84,8 +84,8 @@ import apiService from "@/services/apiService";
 import { Community, CommunityMembersDto, User } from "@/generated";
 import { onBeforeMount, ref } from "vue";
 import { addOutline, informationCircleOutline } from "ionicons/icons";
-import store from '@/store'
-
+import { useStore } from "vuex";
+const store = useStore()
 const currentUser: User = store.getters.getUser;
 const userCommunities = ref<CommunityMembersDto[]>([]);
 const allCommunities = ref<Community[]>([]);

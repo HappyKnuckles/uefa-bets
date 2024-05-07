@@ -78,8 +78,8 @@ import {
 } from "@ionic/vue";
 import apiService from "@/services/apiService";
 import { User, Game, CommunityMembersDto, UserDto } from "@/generated/api";
-import store from '@/store'
-const socket = new WebSocket("wss://localhost:44320/allHub");
+import { useStore } from "vuex";
+const store = useStore();
 
 const games = ref<Game[]>([]);
 const currentUser: User = store.getters.getUser;
@@ -90,30 +90,16 @@ const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
 
-socket.onopen = () => {
-  console.log("WebSocket connection opened");
-  const endChar = String.fromCharCode(30);
-
-  socket.send(`{"protocol":"json","version":1}${endChar}`);
-};
-
-socket.onmessage = async (event) => {
-  console.log("Received message from WebSocket:", event.data);
-  console.log(event)
-  // === "{\"type\":1,\"target\":\"getGames\",\"arguments\":[]}\u001e"
-  if (event.data.includes("getGames")) {
-    await getGames();
-    await getUserCommunities();
+store.dispatch("initWebSocket");
+store.watch(
+  (state) => state.message,
+  async (newMessage) => {
+    if (newMessage.includes("getGames")) {
+      await getGames();
+      await getUserCommunities();
+    }
   }
-};
-
-socket.onclose = () => {
-  console.log("WebSocket connection closed");
-};
-
-socket.onerror = (error) => {
-  console.error("WebSocket error:", error);
-};
+);
 
 onBeforeMount(async () => {
   try {
@@ -139,6 +125,12 @@ async function getUserCommunities() {
   const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
     currentUser.userId
   );
+  console.log(
+    await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
+      currentUser.userId
+    )
+  );
+  console.log(response.data);
   // why is this not the same as api response?
   communityWithMembers.value = response.data;
 }
@@ -156,14 +148,14 @@ async function getGames() {
 }
 
 async function getDisplayUsers(community: CommunityMembersDto) {
-  // this displays a wrong order
   const sortedMembers = community.members!;
+  
+  const sortedValuesArray = Array.from(sortedMembers.values());
+  const lastEntry = sortedValuesArray[sortedValuesArray.length - 1];
+
   let topUsers = sortedMembers.slice(0, 3);
 
-  const lastUser = sortedMembers.slice(-1)[0];
-  topUsers.push(lastUser!);
-
-  while (topUsers.length < 7 && sortedMembers.length > 0) {
+  while (topUsers.length < 6 && sortedMembers.length > 0) {
     const user = sortedMembers.shift();
     if (!topUsers.includes(user!)) {
       topUsers.push(user!);
@@ -177,6 +169,8 @@ async function getDisplayUsers(community: CommunityMembersDto) {
       }
     }
   }
+
+  topUsers.push(lastEntry);
   topUsers = [...new Set(topUsers)];
   return topUsers;
 }

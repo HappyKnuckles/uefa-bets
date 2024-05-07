@@ -74,7 +74,8 @@ import {
 } from "@ionic/vue";
 import apiService from "@/services/apiService";
 import { onBeforeMount, ref } from "vue";
-import store from '@/store'
+import { useStore } from "vuex";
+const store = useStore()
 
 const games = ref<Game[]>([]);
 const yourBets = ref<GameBetDto[]>([]);
@@ -107,7 +108,6 @@ async function getBets(){
 async function getBetlessGames() {
   const response = await apiService.gameApi.apiGameGamesWithoutBetsGet(userId);
   games.value = response.data;
-  // Initialize betForms for each game
   games.value.forEach((game) => {
     betForms.value[game.gameId!] = {
       userId: userId,

@@ -37,7 +37,7 @@ async function login() {
   try {
     const response = await apiService.userApi.apiUserLoginGet(loginForm.value.username);
     const userData = response.data;
-    // sessionStorage.setItem("currentuser", JSON.stringify(userData));
+    sessionStorage.setItem("currentuser", JSON.stringify(userData));
     store.commit("setUser", userData)
     router.push("/tabs/tab1");
     return {
