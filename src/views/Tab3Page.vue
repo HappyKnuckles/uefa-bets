@@ -84,9 +84,9 @@ import apiService from "@/services/apiService";
 import { Community, CommunityMembersDto, User } from "@/generated";
 import { onBeforeMount, ref } from "vue";
 import { addOutline, informationCircleOutline } from "ionicons/icons";
+import store from '@/store'
 
-const currentUserJson = sessionStorage.getItem("currentuser");
-const currentUser: User = JSON.parse(currentUserJson!);
+const currentUser: User = store.getters.getUser;
 const userCommunities = ref<CommunityMembersDto[]>([]);
 const allCommunities = ref<Community[]>([]);
 const isLoading = ref(true);

@@ -74,10 +74,11 @@ import {
 } from "@ionic/vue";
 import apiService from "@/services/apiService";
 import { onBeforeMount, ref } from "vue";
+import store from '@/store'
 
 const games = ref<Game[]>([]);
 const yourBets = ref<GameBetDto[]>([]);
-const currentUser: User = JSON.parse(sessionStorage.getItem("currentuser")!);
+const currentUser: User = store.getters.getUser;
 const userId: string = currentUser.userId!;
 const betForms = ref<{
   [key: number]: { userId: string; homeTeamGoals: string; awayTeamGoals: string };

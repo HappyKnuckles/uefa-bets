@@ -26,19 +26,19 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import apiService from "@/services/apiService";
 import { IonInput, IonButton, IonHeader, IonToolbar, IonTitle, IonPage, IonContent } from "@ionic/vue";
-
+import { useStore } from "vuex";
 const loginForm = ref({
   username: "",
 });
-
 const router = useRouter();
 
+const store = useStore()
 async function login() {
   try {
     const response = await apiService.userApi.apiUserLoginGet(loginForm.value.username);
     const userData = response.data;
-    sessionStorage.setItem("currentuser", JSON.stringify(userData));
-
+    // sessionStorage.setItem("currentuser", JSON.stringify(userData));
+    store.commit("setUser", userData)
     router.push("/tabs/tab1");
     return {
       loginForm,

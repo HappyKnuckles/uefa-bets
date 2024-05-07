@@ -158,10 +158,12 @@ import {
 import apiService from "@/services/apiService";
 import { ref, onBeforeMount, computed } from "vue";
 import { chevronBack, chevronForward, heart, heartOutline } from "ionicons/icons";
+import store from '@/store'
+
 const socket = new WebSocket("wss://localhost:44320/allHub");
 
 const selectedCommunity = ref("");
-const currentUser = JSON.parse(sessionStorage.getItem("currentuser")!);
+const currentUser = store.getters.getUser;
 let communities: Community[] = [];
 const leaderboard = ref();
 const isLoading = ref(true);
@@ -181,7 +183,8 @@ socket.onopen = () => {
 
 socket.onmessage = async (event) => {
   console.log("Received message from WebSocket:", event.data);
-  if (event.data === '{"type":1,"target":"getGames","arguments":[]}\u001e') {
+  // === "{\"type\":1,\"target\":\"getGames\",\"arguments\":[]}\u001e"
+  if (event.data.includes("getGames")) {
     await getCommunityUserRanking(selectedCommunity.value);
   }
 };

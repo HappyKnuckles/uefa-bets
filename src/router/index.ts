@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import TabsPage from '../views/TabsPage.vue';
-import LoginPage from '../views/LoginPage.vue'; // Assuming you have a LoginPage component
-
+import LoginPage from '../views/LoginPage.vue';
+import store from '../store/index';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
@@ -45,10 +45,10 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
 });
-
+ 
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    const isAuthenticated = sessionStorage.getItem('currentuser');
+    const isAuthenticated = store.getters.getUser;
     if (!isAuthenticated) {
       next('/login');
     } else {

@@ -78,10 +78,11 @@ import {
 } from "@ionic/vue";
 import apiService from "@/services/apiService";
 import { User, Game, CommunityMembersDto, UserDto } from "@/generated/api";
+import store from '@/store'
 const socket = new WebSocket("wss://localhost:44320/allHub");
 
 const games = ref<Game[]>([]);
-const currentUser: User = JSON.parse(sessionStorage.getItem("currentuser")!);
+const currentUser: User = store.getters.getUser;
 const displayUsers: { [key: string]: UserDto[] } = {};
 const communityWithMembers = ref<CommunityMembersDto[]>([]);
 const isLoading = ref(true);
@@ -99,7 +100,8 @@ socket.onopen = () => {
 socket.onmessage = async (event) => {
   console.log("Received message from WebSocket:", event.data);
   console.log(event)
-  if (event.data === "{\"type\":1,\"target\":\"getGames\",\"arguments\":[]}\u001e") {
+  // === "{\"type\":1,\"target\":\"getGames\",\"arguments\":[]}\u001e"
+  if (event.data.includes("getGames")) {
     await getGames();
     await getUserCommunities();
   }
