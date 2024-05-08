@@ -35,7 +35,7 @@
           </ion-row>
         </ion-grid>
         <ion-row
-          v-for="(user, index) in community.communityId != null
+          v-for="user in community.communityId != null
             ? displayUsers[community.communityId]
             : []"
           :key="user.name!"
@@ -50,7 +50,7 @@
           <ion-col v-else-if="user.rank === 3" class="bronze" size="1"
             >{{ user.rank }}.
           </ion-col> -->
-          <ion-col size="2" class="ion-text-center">{{ index + 1 }}.</ion-col>
+          <ion-col size="2" class="ion-text-center">{{ user.rank }}.</ion-col>
           <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
           </ion-col>
@@ -149,32 +149,29 @@ async function getDisplayUsers(community: CommunityMembersDto) {
   let displayUsers;
 
   if (sortedMembers.length >= 7) {
-    const lastEntry = sortedMembers[sortedMembers.length - 1];
     displayUsers = sortedMembers.slice(0, 3);
+
     const currentUserIndex = sortedMembers.findIndex(
       (member) => member.name === currentUser.username
     );
+
     const isCurrentUserInDisplayUsers = displayUsers.some(
       (member) => member.name === currentUser.username
     );
+
     const isCurrentUserLast = currentUserIndex === sortedMembers.length - 1;
+
     if (isCurrentUserInDisplayUsers) {
-      console.log(true);
-      displayUsers.push(sortedMembers[3]);
-      displayUsers.push(sortedMembers[4]);
-      displayUsers.push(sortedMembers[5]);
+      displayUsers.push(...sortedMembers.slice(3, 6));
     }
     if (!isCurrentUserInDisplayUsers && !isCurrentUserLast) {
-      displayUsers.push(sortedMembers[currentUserIndex - 1]);
-      displayUsers.push(sortedMembers[currentUserIndex]);
-      displayUsers.push(sortedMembers[currentUserIndex + 1]);
+      displayUsers.push(...sortedMembers.slice(currentUserIndex - 1, currentUserIndex + 2));
     }
     if (isCurrentUserLast) {
-      displayUsers.push(sortedMembers[currentUserIndex - 1]);
-      displayUsers.push(sortedMembers[currentUserIndex - 2]);
+      displayUsers.push(...sortedMembers.slice(currentUserIndex - 3, currentUserIndex + 1));
     }
     if (!isCurrentUserLast) {
-      displayUsers.push(lastEntry);
+      displayUsers.push(sortedMembers[sortedMembers.length - 1]);
     }
   } else {
     displayUsers = sortedMembers;
@@ -188,8 +185,15 @@ async function getDisplayUsers(community: CommunityMembersDto) {
     }
   }
 
-  displayUsers = [...new Set(displayUsers)];
-  return displayUsers;
+  displayUsers = displayUsers.map((user) => {
+    return {
+      ...user,
+      rank: sortedMembers.findIndex(member => member.name === user.name) + 1
+    };
+  });
+  console.log(displayUsers)
+  const uniqueDisplayUsers = [...new Set(displayUsers)];
+  return uniqueDisplayUsers;
 }
 </script>
 

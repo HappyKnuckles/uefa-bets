@@ -331,6 +331,7 @@ export interface UserCommunity {
  * @interface UserDto
  */
 export interface UserDto {
+    rank: number;
     /**
      * 
      * @type {number}
