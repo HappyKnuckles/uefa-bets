@@ -195,24 +195,24 @@ onBeforeMount(async () => {
   isLoading.value = false;
 });
 
-const togglePin = (user: UserDto, communityName: string) => {
+const togglePin = (user: UserDto, communityId: string) => {
   const pinIndex = pinnedUsers.value.findIndex(
     (pin: {
-      userName: string | null | undefined;
+      name: string | null | undefined;
       currentUserName: any;
-      communityName: string | null | undefined;
+      communityId: string | null | undefined;
       rank: number | null | undefined;
-    }) => pin.userName === user.name && pin.currentUserName === currentUser.username
+    }) => pin.name === user.name && pin.currentUserName === currentUser.username
   );
 
   if (pinIndex > -1) {
     pinnedUsers.value.splice(pinIndex, 1);
   } else {
     pinnedUsers.value.push({
-      userName: user.name,
+      name: user.name,
       points: user.points,
       currentUserName: currentUser.username,
-      communityName: communityName,
+      communityId: communityId,
       rank: null,
     });
   }
@@ -226,11 +226,11 @@ const togglePin = (user: UserDto, communityName: string) => {
 const isPinned = (user: UserDto) => {
   return pinnedUsers.value.some(
     (pin: {
-      userName: string | null | undefined;
+      name: string | null | undefined;
       currentUserName: any;
-      communityName: string | null | undefined;
+      communityId: string | null | undefined;
       rank: number | null | undefined;
-    }) => pin.userName === user.name && pin.currentUserName === currentUser.username
+    }) => pin.name === user.name && pin.currentUserName === currentUser.username
   );
 };
 
@@ -259,14 +259,14 @@ const getCommunityUserRanking = async (communityId: string | null) => {
     lastUser.value = leaderboard.value[leaderboard.value.length - 1];
     pinnedUsers.value.forEach(
       (pinnedUser: {
-        userName: any;
+        name: any;
         points: any;
         currentUserName: any;
-        communityName: any;
+        communityId: any;
         rank: any;
       }) => {
         const pinnedUserIndex = leaderboard.value.findIndex(
-          (user: { name: any }) => user.name === pinnedUser.userName
+          (user: { name: any }) => user.name === pinnedUser.name
         );
         if (pinnedUserIndex !== -1) {
           pinnedUser.rank = leaderboard.value[pinnedUserIndex].rank;

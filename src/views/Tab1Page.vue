@@ -21,11 +21,7 @@
           <ion-col class="ion-text-right">{{ game.teamAwayName }}</ion-col>
         </ion-row>
       </ion-grid>
-      <ion-grid
-        v-for="community in communityWithMembers"
-        :key="community.communityId"
-        class="communityGrid"
-      >
+      <ion-grid v-for="community in communityWithMembers" :key="community.communityId" class="communityGrid">
         <ion-grid class="headerGrid">
           <ion-row class="headerRow">{{ community.communityName }}</ion-row>
           <ion-row class="nameRow">
@@ -34,13 +30,9 @@
             <ion-col>Points</ion-col>
           </ion-row>
         </ion-grid>
-        <ion-row
-          v-for="(user, index) in community.communityId != null
-            ? displayUsers[community.communityId]
-            : []"
-          :key="user.name!"
-          class="userRow"
-        >
+        <ion-row v-for="(user, index) in community.communityId != null
+          ? displayUsers[community.communityId]
+          : []" :key="user.name!" class="userRow">
           <!-- <ion-col v-if="user.rank === 1" class="golden" size="1"
             >{{ user.rank }}.
           </ion-col>
@@ -112,14 +104,17 @@ onBeforeMount(async () => {
   } catch (error) {
     console.error("Error fetchign games", error);
   }
+  isLoading.value = false;
+  console.log(communityWithMembers.value)
+});
+
+async function sortDisplayUsers() {
   for (const community of communityWithMembers.value) {
     if (community.communityId != null) {
       displayUsers[community.communityId] = await getDisplayUsers(community);
     }
   }
-
-  isLoading.value = false;
-});
+}
 
 async function getUserCommunities() {
   const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
@@ -130,15 +125,15 @@ async function getUserCommunities() {
       currentUser.userId
     )
   );
-  console.log(response.data);
+  console.log(response);
   // why is this not the same as api response?
   communityWithMembers.value = response.data;
+  await sortDisplayUsers();
 }
 
 async function getGames() {
   const response = await apiService.gameApi.apiGameGet();
-  const data = response.data;
-  games.value = data;
+  games.value = response.data;
   const now = new Date();
   games.value = games.value.filter((game) => {
     const gameStartsAt = new Date(Date.parse(game.gameStartsAt!));
@@ -149,11 +144,12 @@ async function getGames() {
 
 async function getDisplayUsers(community: CommunityMembersDto) {
   const sortedMembers = community.members!;
-  
+
   const sortedValuesArray = Array.from(sortedMembers.values());
   const lastEntry = sortedValuesArray[sortedValuesArray.length - 1];
 
   let topUsers = sortedMembers.slice(0, 3);
+  const currentUserIndex = sortedMembers.findIndex(member => member.name === currentUser.username);
 
   while (topUsers.length < 6 && sortedMembers.length > 0) {
     const user = sortedMembers.shift();
@@ -162,15 +158,16 @@ async function getDisplayUsers(community: CommunityMembersDto) {
     }
   }
 
-  if (pinnedUsers.value.currentUserName === currentUser.username) {
-    for (const user of pinnedUsers.value) {
+  topUsers.push(lastEntry);
+
+  for (const user of pinnedUsers.value) {
+    if (user.communityId === community.communityId) {
       if (!topUsers.includes(user)) {
         topUsers.push(user);
       }
     }
   }
 
-  topUsers.push(lastEntry);
   topUsers = [...new Set(topUsers)];
   return topUsers;
 }
@@ -184,6 +181,7 @@ async function getDisplayUsers(community: CommunityMembersDto) {
   border: 1px solid #333232;
   border-radius: 7px;
 }
+
 .headerGrid {
   background-color: #272727;
   border-radius: 7px;
@@ -200,11 +198,13 @@ async function getDisplayUsers(community: CommunityMembersDto) {
     font-size: 14px;
   }
 }
-.userRow {
-}
+
+.userRow {}
+
 .game {
   font-size: 17px;
 }
+
 .golden {
   color: gold;
 }
@@ -216,6 +216,7 @@ async function getDisplayUsers(community: CommunityMembersDto) {
 .bronze {
   color: #cd7f32;
 }
+
 .red {
   color: var(--ion-color-primary);
 }
