@@ -21,7 +21,11 @@
           <ion-col class="ion-text-right">{{ game.teamAwayName }}</ion-col>
         </ion-row>
       </ion-grid>
-      <ion-grid v-for="community in communityWithMembers" :key="community.communityId" class="communityGrid">
+      <ion-grid
+        v-for="community in communityWithMembers"
+        :key="community.communityId"
+        class="communityGrid"
+      >
         <ion-grid class="headerGrid">
           <ion-row class="headerRow">{{ community.communityName }}</ion-row>
           <ion-row class="nameRow">
@@ -30,9 +34,13 @@
             <ion-col>Points</ion-col>
           </ion-row>
         </ion-grid>
-        <ion-row v-for="(user, index) in community.communityId != null
-          ? displayUsers[community.communityId]
-          : []" :key="user.name!" class="userRow">
+        <ion-row
+          v-for="(user, index) in community.communityId != null
+            ? displayUsers[community.communityId]
+            : []"
+          :key="user.name!"
+          class="userRow"
+        >
           <!-- <ion-col v-if="user.rank === 1" class="golden" size="1"
             >{{ user.rank }}.
           </ion-col>
@@ -105,7 +113,6 @@ onBeforeMount(async () => {
     console.error("Error fetchign games", error);
   }
   isLoading.value = false;
-  console.log(communityWithMembers.value)
 });
 
 async function sortDisplayUsers() {
@@ -120,12 +127,6 @@ async function getUserCommunities() {
   const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
     currentUser.userId
   );
-  console.log(
-    await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
-      currentUser.userId
-    )
-  );
-  console.log(response);
   // why is this not the same as api response?
   communityWithMembers.value = response.data;
   await sortDisplayUsers();
@@ -145,31 +146,50 @@ async function getGames() {
 async function getDisplayUsers(community: CommunityMembersDto) {
   const sortedMembers = community.members!;
 
-  const sortedValuesArray = Array.from(sortedMembers.values());
-  const lastEntry = sortedValuesArray[sortedValuesArray.length - 1];
+  let displayUsers;
 
-  let topUsers = sortedMembers.slice(0, 3);
-  const currentUserIndex = sortedMembers.findIndex(member => member.name === currentUser.username);
-
-  while (topUsers.length < 6 && sortedMembers.length > 0) {
-    const user = sortedMembers.shift();
-    if (!topUsers.includes(user!)) {
-      topUsers.push(user!);
+  if (sortedMembers.length >= 7) {
+    const lastEntry = sortedMembers[sortedMembers.length - 1];
+    displayUsers = sortedMembers.slice(0, 3);
+    const currentUserIndex = sortedMembers.findIndex(
+      (member) => member.name === currentUser.username
+    );
+    const isCurrentUserInDisplayUsers = displayUsers.some(
+      (member) => member.name === currentUser.username
+    );
+    const isCurrentUserLast = currentUserIndex === sortedMembers.length - 1;
+    if (isCurrentUserInDisplayUsers) {
+      console.log(true);
+      displayUsers.push(sortedMembers[3]);
+      displayUsers.push(sortedMembers[4]);
+      displayUsers.push(sortedMembers[5]);
     }
+    if (!isCurrentUserInDisplayUsers && !isCurrentUserLast) {
+      displayUsers.push(sortedMembers[currentUserIndex - 1]);
+      displayUsers.push(sortedMembers[currentUserIndex]);
+      displayUsers.push(sortedMembers[currentUserIndex + 1]);
+    }
+    if (isCurrentUserLast) {
+      displayUsers.push(sortedMembers[currentUserIndex - 1]);
+      displayUsers.push(sortedMembers[currentUserIndex - 2]);
+    }
+    if (!isCurrentUserLast) {
+      displayUsers.push(lastEntry);
+    }
+  } else {
+    displayUsers = sortedMembers;
   }
-
-  topUsers.push(lastEntry);
 
   for (const user of pinnedUsers.value) {
     if (user.communityId === community.communityId) {
-      if (!topUsers.includes(user)) {
-        topUsers.push(user);
+      if (!displayUsers.includes(user)) {
+        displayUsers.push(user);
       }
     }
   }
 
-  topUsers = [...new Set(topUsers)];
-  return topUsers;
+  displayUsers = [...new Set(displayUsers)];
+  return displayUsers;
 }
 </script>
 
@@ -199,7 +219,8 @@ async function getDisplayUsers(community: CommunityMembersDto) {
   }
 }
 
-.userRow {}
+.userRow {
+}
 
 .game {
   font-size: 17px;
