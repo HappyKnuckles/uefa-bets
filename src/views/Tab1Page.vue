@@ -54,7 +54,10 @@
           <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
           </ion-col>
-          <ion-col v-else size="7">{{ user.name }}</ion-col>
+          <ion-col v-else size="7"
+            >{{ user.name }}
+            <ion-icon v-if="user.communityId" :icon="heart" style="vertical-align: top;"></ion-icon>
+          </ion-col>
           <ion-col>{{ user.points }}</ion-col>
         </ion-row>
       </ion-grid>
@@ -75,10 +78,12 @@ import {
   IonBadge,
   IonRow,
   IonCol,
+  IonIcon,
 } from "@ionic/vue";
 import apiService from "@/services/apiService";
 import { User, Game, CommunityMembersDto, UserDto } from "@/generated/api";
 import { useStore } from "vuex";
+import { heart } from "ionicons/icons";
 const store = useStore();
 
 const games = ref<Game[]>([]);
@@ -91,13 +96,34 @@ const pinnedUsers = ref(
 );
 
 store.dispatch("initWebSocket");
+// store.watch(
+//   (state) => state.message,
+//   async (newMessage) => {
+//     if (newMessage.includes("getGames")) {
+//       await getGames();
+//       await getUserCommunities();
+//     }
+//   }
+// );
+// store.watch(
+//   (state) => state.add, 
+//   async () => {
+//     pinnedUsers.value = JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]");
+//     await sortDisplayUsers(); 
+//   }
+// );
 store.watch(
-  (state) => state.message,
-  async (newMessage) => {
-    if (newMessage.includes("getGames")) {
+  (state) => ({
+    message: state.message,
+    add: state.add
+  }),
+  async ({ message }) => {
+    if (message.includes("getGames")) {
       await getGames();
       await getUserCommunities();
     }
+    pinnedUsers.value = JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]");
+    await sortDisplayUsers(); 
   }
 );
 
@@ -146,60 +172,75 @@ async function getGames() {
 async function getDisplayUsers(community: CommunityMembersDto) {
   const sortedMembers = community.members!;
 
-  let displayUsers;
 
   if (sortedMembers.length >= 7) {
-    displayUsers = sortedMembers.slice(0, 3);
+    displayUsers.value = sortedMembers.slice(0, 3);
 
     const currentUserIndex = sortedMembers.findIndex(
       (member) => member.name === currentUser.username
     );
 
-    const isCurrentUserInDisplayUsers = displayUsers.some(
+    const isCurrentUserInTopThree = displayUsers.value.some(
       (member) => member.name === currentUser.username
     );
 
     const isCurrentUserLast = currentUserIndex === sortedMembers.length - 1;
+    const isCurrentUserFourth = currentUserIndex === 3;
+    const isCurrentUserSecondLast = currentUserIndex === sortedMembers.length - 2;
 
-    if (isCurrentUserInDisplayUsers) {
-      displayUsers.push(...sortedMembers.slice(3, 6));
+    switch (true) {
+      case isCurrentUserInTopThree:
+      case isCurrentUserFourth:
+        displayUsers.value.push(...sortedMembers.slice(3, 6));
+        break;
+      case isCurrentUserSecondLast:
+        displayUsers.value.push(
+          ...sortedMembers.slice(currentUserIndex - 2, currentUserIndex + 1)
+        );
+        break;
+      case isCurrentUserLast:
+        displayUsers.value.push(...sortedMembers.slice(currentUserIndex - 3, currentUserIndex));
+        break;
+      default:
+        displayUsers.value.push(
+          ...sortedMembers.slice(currentUserIndex - 1, currentUserIndex + 2)
+        );
+        break;
     }
-    if (!isCurrentUserInDisplayUsers && !isCurrentUserLast) {
-      displayUsers.push(...sortedMembers.slice(currentUserIndex - 1, currentUserIndex + 2));
-    }
-    if (isCurrentUserLast) {
-      displayUsers.push(...sortedMembers.slice(currentUserIndex - 3, currentUserIndex + 1));
-    }
-    if (!isCurrentUserLast) {
-      displayUsers.push(sortedMembers[sortedMembers.length - 1]);
-    }
+    displayUsers.value.push(sortedMembers[sortedMembers.length - 1]);
   } else {
-    displayUsers = sortedMembers;
+    displayUsers.value = sortedMembers;
   }
+
+  pinnedUsers.value = pinnedUsers.value.sort((a: { points: number; registrationDate: string | number | Date; }, b: { points: number; registrationDate: string | number | Date; }) => {
+  if (a.points !== b.points) {
+    return b.points - a.points; 
+  }
+    return new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime();
+  });
 
   for (const user of pinnedUsers.value) {
     if (user.communityId === community.communityId) {
-      if (!displayUsers.includes(user)) {
-        displayUsers.push(user);
+      if (!displayUsers.value.includes(user)) {
+        displayUsers.value.push(user);
       }
     }
   }
 
-  displayUsers = displayUsers.map((user) => {
+  displayUsers.value = displayUsers.value.map((user) => {
     return {
       ...user,
-      rank: sortedMembers.findIndex(member => member.name === user.name) + 1
+      rank: sortedMembers.findIndex((member) => member.name === user.name) + 1,
     };
   });
-  console.log(displayUsers)
-  const uniqueDisplayUsers = [...new Set(displayUsers)];
+  console.log(displayUsers);
+  const uniqueDisplayUsers = [...new Set(displayUsers.value)];
   return uniqueDisplayUsers;
 }
 </script>
 
 <style scoped>
-.communityGrid,
-.gameGrid {
+.communityGrid, .gameGrid {
   margin: 15px;
   background-color: #141211;
   border: 1px solid #333232;

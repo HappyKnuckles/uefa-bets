@@ -5,13 +5,15 @@ export interface State {
   socket: WebSocket | null;
   user: User | null;
   message: string | null;
+  add: boolean | null;
 }
 
 export const store = createStore<State>({
   state: {
     socket: null,
     user: null,
-    message: null
+    message: null,
+    add: false
   },
   mutations: {
     setSocket(state, socket) {
@@ -20,8 +22,13 @@ export const store = createStore<State>({
     setUser(state, user) {
       state.user = user;
     },
-    setMessage(state, message){
+    setMessage(state, message) {
       state.message = message;
+    },
+    setAdd(state, add) {
+      state.add = !add;
+      console.log(add)
+      console.log("changed")
     }
   },
   getters: {
@@ -54,12 +61,14 @@ export const store = createStore<State>({
 
       commit('setSocket', socket);
     },
-
+    addUser({ commit }, add) {
+      commit("setAdd", add);
+    },
     loginUser({ commit }, userData) {
       commit("setUser", userData);
     },
     logoutUser({ commit }) {
-      commit("setUser", null); 
+      commit("setUser", null);
     },
   }
 });

@@ -173,6 +173,7 @@ const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
 const lastUser = ref();
+let rand = true;
 
 store.dispatch("initWebSocket");
 store.watch(
@@ -208,19 +209,22 @@ const togglePin = (user: UserDto, communityId: string) => {
   if (pinIndex > -1) {
     pinnedUsers.value.splice(pinIndex, 1);
   } else {
-    pinnedUsers.value.push({
-      name: user.name,
+    pinnedUsers.value.push({      
       points: user.points,
+      name: user.name,
+      registrationDate: user.registrationDate,
       currentUserName: currentUser.username,
       communityId: communityId,
       rank: null,
     });
   }
-
+  rand = !rand;
   localStorage.setItem(
     `pinnedUsers_${currentUser.username}`,
     JSON.stringify(pinnedUsers.value)
   );
+
+  store.dispatch("addUser", rand)
 };
 
 const isPinned = (user: UserDto) => {
