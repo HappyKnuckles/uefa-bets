@@ -183,7 +183,7 @@ const togglePin = (user: UserDto, communityId: string) => {
       currentUserName: any;
       communityId: string | null | undefined;
       rank: number | null | undefined;
-    }) => pin.name === user.name && pin.currentUserName === currentUser.username
+    }) => pin.name === user.name && pin.currentUserName === currentUser.username && pin.communityId === selectedCommunity.value // schauen ob passt
   );
 
   if (pinIndex > -1) {
@@ -214,7 +214,7 @@ const isPinned = (user: UserDto) => {
       currentUserName: any;
       communityId: string | null | undefined;
       rank: number | null | undefined;
-    }) => pin.name === user.name && pin.currentUserName === currentUser.username
+    }) => pin.name === user.name && pin.currentUserName === currentUser.username && pin.communityId === selectedCommunity.value // schasuen ob passt
   );
 };
 

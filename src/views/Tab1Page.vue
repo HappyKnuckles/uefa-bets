@@ -208,6 +208,7 @@ async function getDisplayUsers(community: CommunityMembersDto) {
       }
     }
   }
+  // eventuell vor pinnedusers da diese mit rang gespeichert werden
   let prevValue = 0;
   let currentRank = 1;
   const pointsToRank = new Map();
