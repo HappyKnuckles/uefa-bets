@@ -24,7 +24,7 @@
               @ionChange="performSearch"
             ></ion-searchbar>
           </ion-col>
-          <ion-col>
+          <ion-col style="display: grid; justify-content: flex-end">
             <ion-select
               v-model="selectedCommunity"
               @ionChange="getCommunityUserRanking(selectedCommunity)"
@@ -84,31 +84,12 @@
           <ion-col v-else size="2">{{ user.rank }}.</ion-col>
           <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
-            <ion-button
-              v-if="user.name != currentUser.username && selectedCommunity != ''"
-              class="pinbtn"
-              @click="togglePin(user, selectedCommunity)"
-            >
-              <ion-icon
-                slot="icon-only"
-                :icon="isPinned(user) ? heart : heartOutline"
-              ></ion-icon>
-            </ion-button>
+           </ion-col>
+          <ion-col size="7" v-else-if="user.name != currentUser.username && selectedCommunity != ''" @click="togglePin(user, selectedCommunity)">
+            {{ user.name }} 
+            <ion-icon :icon="isPinned(user) ? heart : heartOutline"></ion-icon>
           </ion-col>
-          <ion-col size="7" v-else>
-            {{ user.name }}
-            <ion-button
-              v-if="user.name != currentUser.username && selectedCommunity != ''"
-              class="pinbtn"
-              @click="togglePin(user, selectedCommunity)"
-            >
-              <ion-icon
-                slot="icon-only"
-                :icon="isPinned(user) ? heart : heartOutline"
-              ></ion-icon>
-            </ion-button>
-          </ion-col>
-
+          <ion-col size="7" v-else>{{ user.name }}</ion-col>
           <ion-col>{{ user.points }}</ion-col>
         </ion-row>
         <!-- <ion-row class="userRow" v-if="currentUser.rank">
@@ -175,7 +156,6 @@ const pinnedUsers = ref(
 const lastUser = ref();
 let rand = true;
 
-store.dispatch("initWebSocket");
 store.watch(
   (state) => state.message,
   async (newMessage) => {

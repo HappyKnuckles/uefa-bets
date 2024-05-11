@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import TabsPage from '../views/TabsPage.vue';
 import LoginPage from '../views/LoginPage.vue';
-import {store} from '../store/store'
+import { store } from '../store/store'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
@@ -31,9 +31,13 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'tab4',
         component: () => import('@/views/Tab4Page.vue')
+      },
+      {
+        path: 'tab5',
+        component: () => import('@/views/Tab5Page.vue')
       }
     ],
-    meta: { requiresAuth: true } 
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
@@ -45,7 +49,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
 });
- 
+
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     const isAuthenticated = store.getters.getUser;

@@ -54,9 +54,9 @@
           <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
           </ion-col>
-          <ion-col v-else size="7"
-            >{{ user.name }}
+          <ion-col v-else size="7">          
             <ion-icon v-if="user.communityId" :icon="heart" style="vertical-align: top;"></ion-icon>
+            {{ user.name }}
           </ion-col>
           <ion-col>{{ user.points }}</ion-col>
         </ion-row>
@@ -95,23 +95,6 @@ const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
 
-store.dispatch("initWebSocket");
-// store.watch(
-//   (state) => state.message,
-//   async (newMessage) => {
-//     if (newMessage.includes("getGames")) {
-//       await getGames();
-//       await getUserCommunities();
-//     }
-//   }
-// );
-// store.watch(
-//   (state) => state.add, 
-//   async () => {
-//     pinnedUsers.value = JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]");
-//     await sortDisplayUsers(); 
-//   }
-// );
 store.watch(
   (state) => ({
     message: state.message,
@@ -123,6 +106,7 @@ store.watch(
       await getUserCommunities();
     }
     pinnedUsers.value = JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]");
+    await getUserCommunities();
     await sortDisplayUsers(); 
   }
 );
@@ -138,6 +122,7 @@ onBeforeMount(async () => {
   } catch (error) {
     console.error("Error fetchign games", error);
   }
+  await sortDisplayUsers();
   isLoading.value = false;
 });
 
@@ -153,14 +138,12 @@ async function getUserCommunities() {
   const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
     currentUser.userId
   );
-  // why is this not the same as api response?
   communityWithMembers.value = response.data;
-  await sortDisplayUsers();
 }
 
 async function getGames() {
-  const response = await apiService.gameApi.apiGameGet();
-  games.value = response.data;
+  await store.dispatch('fetchGames');
+  games.value = store.getters.getGames;
   const now = new Date();
   games.value = games.value.filter((game) => {
     const gameStartsAt = new Date(Date.parse(game.gameStartsAt!));
@@ -171,7 +154,6 @@ async function getGames() {
 
 async function getDisplayUsers(community: CommunityMembersDto) {
   const sortedMembers = community.members!;
-
 
   if (sortedMembers.length >= 7) {
     displayUsers.value = sortedMembers.slice(0, 3);
@@ -226,14 +208,27 @@ async function getDisplayUsers(community: CommunityMembersDto) {
       }
     }
   }
+  let prevValue = 0;
+  let currentRank = 1;
+  const pointsToRank = new Map();
 
-  displayUsers.value = displayUsers.value.map((user) => {
+  sortedMembers.map((member, index) => {
+    if (!pointsToRank.has(member.points)) {
+      if (member.points !== prevValue) {
+        currentRank = index + 1;
+        prevValue = member.points!;
+      }
+      pointsToRank.set(member.points, currentRank);
+    }
+  });
+  
+  displayUsers.value = displayUsers.value.map(user => {
     return {
       ...user,
-      rank: sortedMembers.findIndex((member) => member.name === user.name) + 1,
+      rank: pointsToRank.get(user.points),
     };
   });
-  console.log(displayUsers);
+
   const uniqueDisplayUsers = [...new Set(displayUsers.value)];
   return uniqueDisplayUsers;
 }

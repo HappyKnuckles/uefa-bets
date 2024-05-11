@@ -9,3 +9,7 @@ ion-spinner {
   ion-button{
     --background-activated: none;
   }
+
+  ion-popover{
+    --backdrop-opacity: 0.3;
+  }

@@ -21,6 +21,10 @@
           <ion-icon aria-hidden="true" :icon="statsChartOutline" />
           <ion-label>Leaderboards</ion-label>
         </ion-tab-button>
+        <ion-tab-button tab="tab5" href="/tabs/tab5" v-if="currentUser.username.toLowerCase() === 'nico'">
+          <ion-icon aria-hidden="true" :icon="constructOutline" />
+          <ion-label>Admin</ion-label>
+        </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>
   </ion-page>
@@ -28,5 +32,10 @@
 
 <script setup lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { cashOutline, clipboardOutline, peopleOutline, statsChartOutline } from 'ionicons/icons';
+import { cashOutline, clipboardOutline, constructOutline, peopleOutline, statsChartOutline } from 'ionicons/icons';
+import { useStore } from 'vuex';
+const store = useStore();
+const currentUser = store.getters.getUser;
+
+
 </script>

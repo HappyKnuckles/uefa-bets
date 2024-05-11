@@ -1,11 +1,13 @@
 import { createStore } from 'vuex';
-import { User } from '@/generated';
+import { Game, User } from '@/generated';
+import apiService from '@/services/apiService';
 
 export interface State {
   socket: WebSocket | null;
   user: User | null;
   message: string | null;
   add: boolean | null;
+  games: Game [] | null;
 }
 
 export const store = createStore<State>({
@@ -13,7 +15,8 @@ export const store = createStore<State>({
     socket: null,
     user: null,
     message: null,
-    add: false
+    add: false,
+    games: []
   },
   mutations: {
     setSocket(state, socket) {
@@ -28,7 +31,9 @@ export const store = createStore<State>({
     setAdd(state, add) {
       state.add = !add;
       console.log(add)
-      console.log("changed")
+    },
+    setGames(state, games) {
+      state.games = games;
     }
   },
   getters: {
@@ -36,6 +41,9 @@ export const store = createStore<State>({
       state.user = JSON.parse(sessionStorage.getItem("currentuser")!);
       return state.user;
     },
+    getGames: (state) => {
+      return state.games;
+    }
   },
   actions: {
     initWebSocket({ commit }) {
@@ -60,6 +68,15 @@ export const store = createStore<State>({
       };
 
       commit('setSocket', socket);
+    },
+    async fetchGames({ commit }) {
+      try {
+        const response = await apiService.gameApi.apiGameGet();
+        commit('setGames', response.data);
+      } catch (error) {
+        console.error('Failed to fetch games:', error);
+        throw error; 
+      }
     },
     addUser({ commit }, add) {
       commit("setAdd", add);

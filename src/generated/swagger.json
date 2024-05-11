@@ -411,29 +411,21 @@
       }
     },
     "/api/Community/set-points": {
-      "put": {
+      "post": {
         "tags": [
           "Community"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Community"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Community"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Community"
-              }
+        "parameters": [
+          {
+            "name": "communityId",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -743,6 +735,37 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/Game/goal": {
+      "post": {
+        "tags": [
+          "Game"
+        ],
+        "parameters": [
+          {
+            "name": "teamAway",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "gameId",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
           }
         }
       }
@@ -1201,6 +1224,10 @@
             "format": "uuid"
           },
           "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "betPoints": {
             "type": "integer",
             "format": "int32"
           },

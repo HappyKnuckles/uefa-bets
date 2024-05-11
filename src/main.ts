@@ -27,7 +27,9 @@ const app = createApp(App)
   .use(IonicVue)
   .use(router)
   .use(store);
-  
+
+store.dispatch("initWebSocket");
+
 router.isReady().then(() => {
   app.mount('#app');
 });

@@ -29,9 +29,9 @@
               <ion-icon slot="icon-only" :icon="informationCircleOutline"></ion-icon>
             </ion-button>
           </ion-col>
-          <ion-popover :trigger="'member-view-' + community.communityId">
+          <ion-popover :trigger="'member-view-' + community.communityId" side="left">
             <ion-content>
-              <ion-grid>
+              <ion-grid class="popover-grid">
                 <ion-row v-for="user in community.members" :key="user.name!">
                   {{ user.name }}
                 </ion-row>
@@ -90,7 +90,7 @@ const currentUser: User = store.getters.getUser;
 const userCommunities = ref<CommunityMembersDto[]>([]);
 const allCommunities = ref<Community[]>([]);
 const isLoading = ref(true);
-
+let rand = true;
 const createAlert = async () => {
   const alert = await createAlertController();
   await alert.present();
@@ -131,7 +131,9 @@ const handleAlertInput = async (communityname: string | undefined) => {
       communityname
     );
     await getCommunites();
-    await getUserCommunities();
+    await getUserCommunities();    
+    rand = !rand;
+    store.dispatch("addUser", rand)
   } catch (error) {
     console.log(error);
   }
@@ -155,8 +157,7 @@ async function getUserCommunities() {
   const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
     currentUser.userId
   );
-  const data = response.data;
-  userCommunities.value = data;
+  userCommunities.value = response.data;
 }
 
 async function getCommunites() {
@@ -173,7 +174,9 @@ async function joinCommunity(communityId: string) {
       communityId
     );
     await getUserCommunities();
-    await getCommunites();
+    await getCommunites();    
+    rand = !rand;
+    store.dispatch("addUser", rand)
   } catch (error) {
     console.log(error);
   }
@@ -197,15 +200,23 @@ async function joinCommunity(communityId: string) {
     font-weight: 600;
   }
 }
-
+h2{
+  margin-left: 15px;
+  font-weight: 600;
+}
 .actionBtn{
   font-size: 14px;
 }
-
-ion-grid {
+.popover-grid{
+  padding: 10px;
+  ion-row:not(:last-child){
+    margin-bottom: 5px;
+  }
+}
+ion-grid:not(.popover-grid) {
   border: 1px solid #333232;
   background-color: #141211;
-  margin: 10px;
+  margin: 15px 10px;
   border-radius: 7px;
 }
 </style>

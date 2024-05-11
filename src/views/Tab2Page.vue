@@ -21,7 +21,7 @@
           <ion-col class="ion-text-right">{{ bet.awayTeamName }}</ion-col>
         </ion-row>
       </ion-grid>
-      <h2>Needs bets</h2>
+      <h2>Open bets</h2>
       <ion-grid v-for="game in games" :key="game.gameId">
         <form
           @submit.prevent="() => bet(game.gameId!)"
@@ -158,5 +158,10 @@ ion-grid {
   padding: 5px;
   display: flex;
   align-self: center;
+}
+
+h2{
+  margin-left: 15px;
+  font-weight: 600;
 }
 </style>
