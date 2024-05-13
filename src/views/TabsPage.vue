@@ -3,25 +3,25 @@
     <ion-tabs>
       <ion-router-outlet></ion-router-outlet>
       <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="tab1" href="/tabs/tab1">
+        <ion-tab-button tab="dashboard" href="/tabs/dashboard">
           <ion-icon aria-hidden="true" :icon="clipboardOutline" />
           <ion-label>Dashboard</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="tab2" href="/tabs/tab2">
+        <ion-tab-button tab="bets" href="/tabs/bets">
           <ion-icon aria-hidden="true" :icon="cashOutline" />
           <ion-label>Bets</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="tab3" href="/tabs/tab3">
+        <ion-tab-button tab="communities" href="/tabs/communities">
           <ion-icon aria-hidden="true" :icon="peopleOutline" />
           <ion-label>Communities</ion-label>
         </ion-tab-button>
-        <ion-tab-button tab="tab4" href="/tabs/tab4">
+        <ion-tab-button tab="leaderboard" href="/tabs/leaderboard">
           <ion-icon aria-hidden="true" :icon="statsChartOutline" />
           <ion-label>Leaderboards</ion-label>
         </ion-tab-button>
-        <ion-tab-button tab="tab5" href="/tabs/tab5" v-if="currentUser.username.toLowerCase() === 'nico'">
+        <ion-tab-button tab="admin" href="/tabs/admin" v-if="currentUser.username.toLowerCase() === 'nico'">
           <ion-icon aria-hidden="true" :icon="constructOutline" />
           <ion-label>Admin</ion-label>
         </ion-tab-button>

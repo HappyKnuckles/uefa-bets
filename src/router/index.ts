@@ -6,7 +6,7 @@ import { store } from '../store/store'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/tabs/tab1'
+    redirect: '/tabs/dashboard'
   },
   {
     path: '/tabs/',
@@ -14,27 +14,27 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       {
         path: '',
-        redirect: '/tabs/tab1'
+        redirect: '/tabs/dashboard'
       },
       {
-        path: 'tab1',
-        component: () => import('@/views/Tab1Page.vue')
+        path: 'dashboard',
+        component: () => import('@/views/DashboardPage.vue')
       },
       {
-        path: 'tab2',
-        component: () => import('@/views/Tab2Page.vue')
+        path: 'bets',
+        component: () => import('@/views/BetPage.vue')
       },
       {
-        path: 'tab3',
-        component: () => import('@/views/Tab3Page.vue')
+        path: 'communities',
+        component: () => import('@/views/CommunityPage.vue')
       },
       {
-        path: 'tab4',
-        component: () => import('@/views/Tab4Page.vue')
+        path: 'leaderboard',
+        component: () => import('@/views/LeaderboardPage.vue')
       },
       {
-        path: 'tab5',
-        component: () => import('@/views/Tab5Page.vue')
+        path: 'admin',
+        component: () => import('@/views/AdminPage.vue')
       }
     ],
     meta: { requiresAuth: true }
