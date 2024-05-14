@@ -22,8 +22,12 @@
         </ion-row>
       </ion-grid>
       <ion-grid v-for="community in communityWithMembers" :key="community.communityId" class="communityGrid">
-        <ion-grid class="headerGrid">
-          <ion-row class="headerRow">{{ community.communityName }}</ion-row>
+        <ion-grid class="headerGrid">            
+          <router-link :to="`/tabs/leaderboard`" @click="setCommunityId(community.communityId)">
+            <ion-row class="headerRow">
+                {{ community.communityName }}
+            </ion-row>
+          </router-link>
           <ion-row class="nameRow">
             <ion-col size="2" class="ion-text-center">Rank</ion-col>
             <ion-col size="7">Name</ion-col>
@@ -124,6 +128,10 @@ onBeforeMount(async () => {
   await sortDisplayUsers();
   isLoading.value = false;
 });
+
+function setCommunityId(id: any){
+  store.commit('setCommunityId', id);
+}
 
 async function sortDisplayUsers() {
   for (const community of communityWithMembers.value) {

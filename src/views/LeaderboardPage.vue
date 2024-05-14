@@ -29,7 +29,7 @@
               v-model="selectedCommunity"
               @ionChange="getCommunityUserRanking(selectedCommunity)"
             >
-              <ion-select-option value="">No Community</ion-select-option>
+              <ion-select-option :value="emptyGuid">No Community</ion-select-option>
               <ion-select-option
                 v-for="community in communities"
                 :key="community.communityId"
@@ -85,7 +85,7 @@
           <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
            </ion-col>
-          <ion-col size="7" v-else-if="user.name != currentUser.username && selectedCommunity != ''" @click="togglePin(user, selectedCommunity)">
+          <ion-col size="7" v-else-if="user.name != currentUser.username && selectedCommunity != emptyGuid" @click="togglePin(user, selectedCommunity)">
             {{ user.name }} 
             <ion-icon :icon="isPinned(user) ? heart : heartOutline"></ion-icon>
           </ion-col>
@@ -142,7 +142,8 @@ import { chevronBack, chevronForward, heart, heartOutline } from "ionicons/icons
 import { useStore } from "vuex";
 const store = useStore();
 
-const selectedCommunity = ref("");
+const emptyGuid = '00000000-0000-0000-0000-000000000000';
+const selectedCommunity = ref(emptyGuid);
 const currentUser = store.getters.getUser;
 let communities: Community[] = [];
 const leaderboard = ref();
@@ -157,9 +158,17 @@ const lastUser = ref();
 let rand;
 
 store.watch(
-  (state) => state.message,
-  async (newMessage) => {
-    if (newMessage.includes("getCommunityUserRanking")) {
+  (state) => ({
+    message: state.message,
+    communityId: state.communityId
+  }),
+  async ({ message, communityId }) => {
+    if (message.includes("getCommunityUserRanking")) {
+      await getCommunityUserRanking(selectedCommunity.value);
+    }
+    if (communityId !== selectedCommunity.value){
+      console.log(communityId)
+      selectedCommunity.value = communityId;
       await getCommunityUserRanking(selectedCommunity.value);
     }
   }
@@ -176,7 +185,7 @@ onBeforeMount(async () => {
   isLoading.value = false;
 });
 
-const togglePin = (user: UserDto, communityId: string) => {
+async function togglePin(user: UserDto, communityId: string){
   const pinIndex = pinnedUsers.value.findIndex(
     (pin: {
       name: string | null | undefined;
@@ -206,7 +215,7 @@ const togglePin = (user: UserDto, communityId: string) => {
   );
 
   store.dispatch("addUser", rand)
-};
+}
 
 const isPinned = (user: UserDto) => {
   return pinnedUsers.value.some(
@@ -219,7 +228,7 @@ const isPinned = (user: UserDto) => {
   );
 };
 
-const getCommunityUserRanking = async (communityId: string | null) => {
+async function getCommunityUserRanking(communityId: string | null){
   try {
     const response = await apiService.communityApi.apiCommunityRankingGet(communityId!);
 
@@ -263,7 +272,7 @@ const getCommunityUserRanking = async (communityId: string | null) => {
   } catch (error) {
     console.log(error);
   }
-};
+}
 
 const performSearch = () => {
   currentPage.value = 1;

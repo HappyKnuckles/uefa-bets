@@ -11,6 +11,7 @@ export interface State {
   userCommunities: CommunityMembersDto [] | null;
   loadingUserCommunities: boolean | null;
   loadingGames: boolean | null;
+  communityId: string | null;
 }
 
 export const store = createStore<State>({
@@ -22,7 +23,8 @@ export const store = createStore<State>({
     games: [],
     userCommunities: [],
     loadingUserCommunities: false,
-    loadingGames: false
+    loadingGames: false,
+    communityId: ''
   },
   mutations: {
     setSocket(state, socket) {
@@ -48,6 +50,9 @@ export const store = createStore<State>({
     },
     setLoadingGames(state, loadingGames) {
       state.loadingGames = loadingGames;
+    },
+    setCommunityId(state, id){
+      state.communityId = id;
     }
   },
   getters: {
