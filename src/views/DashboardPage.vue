@@ -79,13 +79,17 @@ const store = useStore();
 
 const games = ref<Game[]>([]);
 const currentUser: User = store.getters.getUser;
-const displayUsers: { [key: string]: UserDto[] } = {};
+const displayUsers: { [key: string]: ExtendedUserDto[] } = {};
 const communityWithMembers = ref<CommunityMembersDto[]>([]);
 const isLoading = ref(true);
 const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
 const addValue = ref(!store.getters.getAddValue);
+interface ExtendedUserDto extends UserDto{
+  rank: number | null | undefined;
+  communityId: any;
+}
 
 store.watch(
   (state) => ({
@@ -151,7 +155,7 @@ async function getGames() {
 }
 
 async function getDisplayUsers(community: CommunityMembersDto) {
-  const sortedMembers = community.members!;
+  const sortedMembers: ExtendedUserDto[] = community.members!.map(user => user as ExtendedUserDto);
 
   if (sortedMembers.length >= 7) {
     displayUsers.value = sortedMembers.slice(0, 3);
@@ -224,7 +228,7 @@ async function getDisplayUsers(community: CommunityMembersDto) {
   displayUsers.value = displayUsers.value.map(user => {
     return {
       ...user,
-      rank: pointsToRank.get(user.points),
+      rank: pointsToRank.get(user.points)
     };
   });
 
