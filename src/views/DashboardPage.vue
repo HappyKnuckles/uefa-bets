@@ -21,11 +21,7 @@
           <ion-col class="ion-text-right">{{ game.teamAwayName }}</ion-col>
         </ion-row>
       </ion-grid>
-      <ion-grid
-        v-for="community in communityWithMembers"
-        :key="community.communityId"
-        class="communityGrid"
-      >
+      <ion-grid v-for="community in communityWithMembers" :key="community.communityId" class="communityGrid">
         <ion-grid class="headerGrid">
           <ion-row class="headerRow">{{ community.communityName }}</ion-row>
           <ion-row class="nameRow">
@@ -34,27 +30,23 @@
             <ion-col>Points</ion-col>
           </ion-row>
         </ion-grid>
-        <ion-row
-          v-for="user in community.communityId != null
-            ? displayUsers[community.communityId]
-            : []"
-          :key="user.name!"
-          class="userRow"
-        >
-          <!-- <ion-col v-if="user.rank === 1" class="golden" size="1"
+        <ion-row v-for="user in community.communityId != null
+          ? displayUsers[community.communityId]
+          : []" :key="user.name!" class="userRow">
+          <ion-col v-if="user.rank === 1" class="golden ion-text-center" size="2"
             >{{ user.rank }}.
           </ion-col>
-          <ion-col v-else-if="user.rank === 2" class="silver" size="1"
+          <ion-col v-else-if="user.rank === 2" class="silver ion-text-center" size="2"
             >{{ user.rank }}.
           </ion-col>
-          <ion-col v-else-if="user.rank === 3" class="bronze" size="1"
+          <ion-col v-else-if="user.rank === 3" class="bronze ion-text-center" size="2"
             >{{ user.rank }}.
-          </ion-col> -->
-          <ion-col size="2" class="ion-text-center">{{ user.rank }}.</ion-col>
+          </ion-col>
+          <ion-col v-else class="ion-text-center" size="2">{{ user.rank }}.</ion-col>
           <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
           </ion-col>
-          <ion-col v-else size="7">          
+          <ion-col v-else size="7">
             <ion-icon v-if="user.communityId" :icon="heart" style="vertical-align: top;"></ion-icon>
             {{ user.name }}
           </ion-col>
@@ -80,7 +72,6 @@ import {
   IonCol,
   IonIcon,
 } from "@ionic/vue";
-import apiService from "@/services/apiService";
 import { User, Game, CommunityMembersDto, UserDto } from "@/generated/api";
 import { useStore } from "vuex";
 import { heart } from "ionicons/icons";
@@ -94,33 +85,37 @@ const isLoading = ref(true);
 const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
+const addValue = ref(!store.getters.getAddValue);
 
 store.watch(
   (state) => ({
     message: state.message,
     add: state.add
   }),
-  async ({ message }) => {
+  async ({ message, add }) => {
     if (message.includes("getGames")) {
       await getGames();
       await getUserCommunities();
     }
-    pinnedUsers.value = JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]");
-    await getUserCommunities();
-    await sortDisplayUsers(); 
-  }
+    if(add === addValue.value){
+      addValue.value = !addValue.value;
+      console.log("ja")
+      pinnedUsers.value = JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]");
+      await getUserCommunities();
+      await sortDisplayUsers();}
+    }
 );
 
 onBeforeMount(async () => {
   try {
     await getUserCommunities();
   } catch (error) {
-    console.error(!"Error fetching Usercommunities", error);
+    console.error("Error fetching Usercommunities", error);
   }
   try {
     await getGames();
   } catch (error) {
-    console.error("Error fetchign games", error);
+    console.error("Error fetching games", error);
   }
   await sortDisplayUsers();
   isLoading.value = false;
@@ -135,14 +130,17 @@ async function sortDisplayUsers() {
 }
 
 async function getUserCommunities() {
-  const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
-    currentUser.userId
-  );
-  communityWithMembers.value = response.data;
+  if (!store.getters.getLoadingUserCommunities) {
+    await store.dispatch('fetchUserCommunities');
+  }
+  communityWithMembers.value = store.getters.getUserCommunities;
 }
 
+
 async function getGames() {
-  await store.dispatch('fetchGames');
+  if (!store.getters.getLoadingGames) {
+    await store.dispatch('fetchGames');
+  }
   games.value = store.getters.getGames;
   const now = new Date();
   games.value = games.value.filter((game) => {
@@ -195,9 +193,9 @@ async function getDisplayUsers(community: CommunityMembersDto) {
   }
 
   pinnedUsers.value = pinnedUsers.value.sort((a: { points: number; registrationDate: string | number | Date; }, b: { points: number; registrationDate: string | number | Date; }) => {
-  if (a.points !== b.points) {
-    return b.points - a.points; 
-  }
+    if (a.points !== b.points) {
+      return b.points - a.points;
+    }
     return new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime();
   });
 
@@ -222,7 +220,7 @@ async function getDisplayUsers(community: CommunityMembersDto) {
       pointsToRank.set(member.points, currentRank);
     }
   });
-  
+
   displayUsers.value = displayUsers.value.map(user => {
     return {
       ...user,
@@ -236,7 +234,8 @@ async function getDisplayUsers(community: CommunityMembersDto) {
 </script>
 
 <style scoped>
-.communityGrid, .gameGrid {
+.communityGrid,
+.gameGrid {
   margin: 15px;
   background-color: #141211;
   border: 1px solid #333232;
@@ -260,8 +259,7 @@ async function getDisplayUsers(community: CommunityMembersDto) {
   }
 }
 
-.userRow {
-}
+.userRow {}
 
 .game {
   font-size: 17px;

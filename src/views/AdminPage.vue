@@ -55,12 +55,19 @@ const store = useStore();
 const isLoading = ref(true);
 
 onBeforeMount(async () => {
-  await getGames();
+  try {
+    await getGames();
+  }
+  catch (error) {
+    console.error("error fechting games", error);
+  }
   isLoading.value = false;
 });
 
 async function getGames() {
-  await store.dispatch("fetchGames");
+  if (!store.getters.getLoadingGames) {
+    await store.dispatch("fetchGames");
+  }
   games.value = store.getters.getGames;
 }
 
@@ -78,6 +85,7 @@ async function setGoal(awayTeam: boolean, gameId: number) {
   border-radius: 7px;
   font-size: 17px;
 }
+
 ion-icon {
   font-size: 17px;
   vertical-align: top;

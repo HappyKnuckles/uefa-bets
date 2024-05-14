@@ -14,7 +14,7 @@
 
     <ion-content :fullscreen="true" v-else>
       <h2>Your Communities</h2>
-      <ion-grid v-for="community in userCommunities" :key="community.communityId!">
+      <ion-grid v-for="community in communityWithMembers" :key="community.communityId!">
         <ion-row class="titleRow">
           <ion-col size="10">
             <ion-label>
@@ -87,14 +87,25 @@ import { addOutline, informationCircleOutline } from "ionicons/icons";
 import { useStore } from "vuex";
 const store = useStore()
 const currentUser: User = store.getters.getUser;
-const userCommunities = ref<CommunityMembersDto[]>([]);
+const communityWithMembers = ref<CommunityMembersDto[]>([]);
 const allCommunities = ref<Community[]>([]);
 const isLoading = ref(true);
-let rand = true;
 const createAlert = async () => {
   const alert = await createAlertController();
   await alert.present();
 };
+let rand;
+
+store.watch(
+  (state) => ({
+    message: state.message
+  }),
+  async ({ message }) => {
+    if (message.includes("getGames")) {
+      await getUserCommunities();
+    }
+  }
+)
 
 const createAlertController = async () => {
   const alert = await alertController.create({
@@ -131,11 +142,12 @@ const handleAlertInput = async (communityname: string | undefined) => {
       communityname
     );
     await getCommunites();
-    await getUserCommunities();    
+    rand = store.getters.getAddValue;
     rand = !rand;
     store.dispatch("addUser", rand)
+    await getUserCommunities();
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
@@ -143,22 +155,23 @@ onBeforeMount(async () => {
   try {
     await getUserCommunities();
   } catch (error) {
-    console.log("Error fetching communities", error);
+    console.error("Error fetching usercommunities", error);
   }
   try {
     await getCommunites();
   } catch (error) {
-    console.log(error);
+    console.error("error fetching communities", error);
   }
   isLoading.value = false;
 });
 
 async function getUserCommunities() {
-  const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(
-    currentUser.userId
-  );
-  userCommunities.value = response.data;
+  if (!store.getters.getLoadingUserCommunities) {
+    await store.dispatch('fetchUserCommunities');
+  }
+  communityWithMembers.value = store.getters.getUserCommunities;
 }
+
 
 async function getCommunites() {
   const response = await apiService.communityApi.apiCommunityCommunitesWithoutUserGet(
@@ -174,7 +187,8 @@ async function joinCommunity(communityId: string) {
       communityId
     );
     await getUserCommunities();
-    await getCommunites();    
+    await getCommunites();
+    rand = store.getters.getAddValue;
     rand = !rand;
     store.dispatch("addUser", rand)
   } catch (error) {
@@ -190,29 +204,35 @@ async function joinCommunity(communityId: string) {
     color: white;
   }
 }
+
 .titleRow {
   display: flex;
   align-items: center;
 
-  ion-label{
+  ion-label {
     font-size: 17px;
     margin: 0 5px;
     font-weight: 600;
   }
 }
-h2{
+
+h2 {
   margin-left: 15px;
   font-weight: 600;
 }
-.actionBtn{
+
+.actionBtn {
   font-size: 14px;
 }
-.popover-grid{
+
+.popover-grid {
   padding: 10px;
-  ion-row:not(:last-child){
+
+  ion-row:not(:last-child) {
     margin-bottom: 5px;
   }
 }
+
 ion-grid:not(.popover-grid) {
   border: 1px solid #333232;
   background-color: #141211;

@@ -1,5 +1,5 @@
 import { createStore } from 'vuex';
-import { Game, User } from '@/generated';
+import { CommunityMembersDto, Game, User } from '@/generated';
 import apiService from '@/services/apiService';
 
 export interface State {
@@ -8,6 +8,9 @@ export interface State {
   message: string | null;
   add: boolean | null;
   games: Game [] | null;
+  userCommunities: CommunityMembersDto [] | null;
+  loadingUserCommunities: boolean | null;
+  loadingGames: boolean | null;
 }
 
 export const store = createStore<State>({
@@ -16,7 +19,10 @@ export const store = createStore<State>({
     user: null,
     message: null,
     add: false,
-    games: []
+    games: [],
+    userCommunities: [],
+    loadingUserCommunities: false,
+    loadingGames: false
   },
   mutations: {
     setSocket(state, socket) {
@@ -29,11 +35,19 @@ export const store = createStore<State>({
       state.message = message;
     },
     setAdd(state, add) {
-      state.add = !add;
-      console.log(add)
+      state.add = add;
     },
     setGames(state, games) {
       state.games = games;
+    },
+    setUserCommunities(state, userCommunities){
+      state.userCommunities = userCommunities;
+    },
+    setLoadingUserCommunities(state, loadingUserCommunities){
+      state.loadingUserCommunities = loadingUserCommunities;
+    },
+    setLoadingGames(state, loadingGames) {
+      state.loadingGames = loadingGames;
     }
   },
   getters: {
@@ -43,6 +57,18 @@ export const store = createStore<State>({
     },
     getGames: (state) => {
       return state.games;
+    },
+    getUserCommunities: (state) => {
+      return state.userCommunities;
+    },
+    getLoadingGames: (state) => {
+      return state.loadingGames;
+    },
+    getLoadingUserCommunities: (state) => {
+      return state.loadingUserCommunities;
+    },
+    getAddValue: (state) => {
+      return state.add;
     }
   },
   actions: {
@@ -71,11 +97,25 @@ export const store = createStore<State>({
     },
     async fetchGames({ commit }) {
       try {
+        commit('setLoadingGames', true);
         const response = await apiService.gameApi.apiGameGet();
         commit('setGames', response.data);
       } catch (error) {
         console.error('Failed to fetch games:', error);
         throw error; 
+      } finally {
+        commit('setLoadingGames', false);
+      }
+    },
+    async fetchUserCommunities({ commit }) {
+      try {
+        commit('setLoadingUserCommunities', true);
+        const response = await apiService.userCommunityApi.apiUserCommunityShowUserCommunitiesGet(this.state.user!.userId);
+        commit('setUserCommunities', response.data);
+      } catch (error){
+        console.log(error);
+      } finally {
+        commit('setLoadingUserCommunities', false);
       }
     },
     addUser({ commit }, add) {

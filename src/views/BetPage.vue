@@ -95,7 +95,7 @@ onBeforeMount(async () => {
   try {
     await getBets();
   } catch (error) {
-    console.log(error);
+    console.error("failed fetching bets", error);
   }
   isLoading.value = false;
 });
@@ -133,7 +133,7 @@ async function bet(gameId: number) {
     await getBetlessGames();
     await getBets();
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 </script>

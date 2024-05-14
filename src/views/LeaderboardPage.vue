@@ -154,7 +154,7 @@ const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
 const lastUser = ref();
-let rand = true;
+let rand;
 
 store.watch(
   (state) => state.message,
@@ -171,7 +171,7 @@ onBeforeMount(async () => {
     communities = response.data;
     await getCommunityUserRanking(null);
   } catch (error) {
-    console.log(error);
+    console.error("Failed fetching communities or ranking",error);
   }
   isLoading.value = false;
 });
@@ -198,6 +198,7 @@ const togglePin = (user: UserDto, communityId: string) => {
       rank: null,
     });
   }
+  rand = store.getters.getAddValue;
   rand = !rand;
   localStorage.setItem(
     `pinnedUsers_${currentUser.username}`,
