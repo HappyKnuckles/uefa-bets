@@ -69,6 +69,91 @@
           <ion-col size="7" v-else>{{ user.name }}</ion-col>
           <ion-col>{{ user.points }}</ion-col>
         </ion-row>
+        <ion-grid>
+        <ion-row v-for="user in pagedLeaderboard1" :key="user.name" class="userRow">
+          <ion-row class="pagination">
+            <ion-col class="ion-text-left">
+              <ion-button
+                class="nav btn"
+                size="small"
+                @click="prevPage1"
+                :disabled="currentPage2 === 1"
+                ><ion-icon slot="icon-only" :icon="chevronBack"></ion-icon>
+              </ion-button>
+            </ion-col>
+            <ion-col class="ion-text-center">
+              <span> {{ currentPage2 }} of {{ totalPages2 }}</span>
+            </ion-col>
+            <ion-col class="ion-text-right">
+              <ion-button
+                class="nav btn"
+                size="small"
+                @click="nextPage1"
+                :disabled="currentPage2 === totalPages2"
+                ><ion-icon slot="icon-only" :icon="chevronForward"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+
+            <ion-col v-if="user.rank === 1" class="golden" size="2">
+              {{ user.rank }}.
+            </ion-col>
+            <ion-col v-else-if="user.rank === 2" class="silver" size="2">
+              {{ user.rank }}.
+            </ion-col>
+            <ion-col v-else-if="user.rank === 3" class="bronze" size="2">
+              {{ user.rank }}.
+            </ion-col>
+            <ion-col v-else size="2">{{ user.rank }}.</ion-col>
+            <ion-col size="7">{{ user.name }}</ion-col>
+            <ion-col>{{ user.points }}</ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <ion-grid v-if="leaderboard.length > 0">
+          <ion-row class="pagination">
+            <ion-col class="ion-text-left">
+              <ion-button
+                class="nav btn"
+                size="small"
+                @click="prevPage2"
+                :disabled="currentPage2 === 1"
+                ><ion-icon slot="icon-only" :icon="chevronBack"></ion-icon>
+              </ion-button>
+            </ion-col>
+            <ion-col class="ion-text-center">
+              <span> {{ currentPage2 }} of {{ totalPages2 }}</span>
+            </ion-col>
+            <ion-col class="ion-text-right">
+              <ion-button
+                class="nav btn"
+                size="small"
+                @click="nextPage2"
+                :disabled="currentPage2 === totalPages2"
+                ><ion-icon slot="icon-only" :icon="chevronForward"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+          <ion-row class="titleRow">
+            <ion-col size="2">Rank</ion-col>
+            <ion-col size="7">Name</ion-col>
+            <ion-col>Points</ion-col>
+          </ion-row>
+          <ion-row v-for="user in pagedLeaderboard2" :key="user.name" class="userRow">
+            <ion-col v-if="user.rank === 1" class="golden" size="2">
+              {{ user.rank }}.
+            </ion-col>
+            <ion-col v-else-if="user.rank === 2" class="silver" size="2">
+              {{ user.rank }}.
+            </ion-col>
+            <ion-col v-else-if="user.rank === 3" class="bronze" size="2">
+              {{ user.rank }}.
+            </ion-col>
+            <ion-col v-else size="2">{{ user.rank }}.</ion-col>
+            <ion-col size="7">{{ user.name }}</ion-col>
+            <ion-col>{{ user.points }}</ion-col>
+          </ion-row>
+        </ion-grid>
         <!-- <ion-row class="userRow" v-if="currentUser.rank">
           <ion-col size="2">
             <ion-col v-if="currentUser.rank === 1" class="golden">{{ currentUser.rank }}.</ion-col>
@@ -279,6 +364,55 @@ const nextPage = () => {
 const prevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--;
+  }
+};
+
+const currentUserIndex = computed(() =>
+  leaderboard.value.findIndex((user: { name: any }) => user.name === currentUser.username)
+);
+
+const pageSize1 = ref(10);
+const currentPage1 = ref(1);
+
+const pagedLeaderboard1 = computed(() => {
+  const startIndex = (currentPage1.value - 1) * pageSize1.value;
+  const endIndex = startIndex + pageSize1.value;
+  return leaderboard.value.slice(startIndex, endIndex);
+});
+
+const totalPages1 = computed(() => Math.ceil(leaderboard.value.length / pageSize1.value));
+const totalPages2 = computed(() => Math.ceil((leaderboard.value.length - currentUserIndex.value) / pageSize2.value));
+
+const pageSize2 = ref(10);
+const currentPage2 = ref(1);
+
+const pagedLeaderboard2 = computed(() => {
+  const startIndex = currentUserIndex.value + (currentPage2.value - 1) * pageSize2.value;
+  const endIndex = startIndex + pageSize2.value;
+  return leaderboard.value.slice(startIndex, endIndex);
+});
+
+const nextPage1 = () => {
+  if (currentPage1.value < totalPages1.value) {
+    currentPage1.value++;
+  }
+};
+
+const prevPage1 = () => {
+  if (currentPage1.value > 1) {
+    currentPage1.value--;
+  }
+};
+
+const nextPage2 = () => {
+  if (currentPage2.value < totalPages2.value) {
+    currentPage2.value++;
+  }
+};
+
+const prevPage2 = () => {
+  if (currentPage2.value > 1) {
+    currentPage2.value--;
   }
 };
 </script>
