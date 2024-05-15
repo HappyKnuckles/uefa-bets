@@ -74,6 +74,9 @@ export const store = createStore<State>({
     },
     getAddValue: (state) => {
       return state.add;
+    },
+    getCommunityId: (state) => {
+      return state.communityId;
     }
   },
   actions: {

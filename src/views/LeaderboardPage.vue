@@ -12,29 +12,16 @@
       <ion-grid>
         <ion-row class="header">
           <ion-col size="2">
-            <ion-input
-              label="Pagesize"
-              labelPlacement="stacked"
-              v-model="pageSize"
-            ></ion-input>
+            <ion-input label="Pagesize" labelPlacement="stacked" v-model="pageSize"></ion-input>
           </ion-col>
           <ion-col size="6">
-            <ion-searchbar
-              v-model="searchQuery"
-              @ionChange="performSearch"
-            ></ion-searchbar>
+            <ion-searchbar v-model="searchQuery" @ionChange="performSearch"></ion-searchbar>
           </ion-col>
           <ion-col style="display: grid; justify-content: flex-end">
-            <ion-select
-              v-model="selectedCommunity"
-              @ionChange="getCommunityUserRanking(selectedCommunity)"
-            >
-              <ion-select-option :value="emptyGuid">No Community</ion-select-option>
-              <ion-select-option
-                v-for="community in communities"
-                :key="community.communityId"
-                :value="community.communityId"
-              >
+            <ion-select v-model="selectedCommunity" @ionChange="getCommunityUserRanking(selectedCommunity)">
+              <ion-select-option value="">No Community</ion-select-option>
+              <ion-select-option v-for="community in communities" :key="community.communityId"
+                :value="community.communityId">
                 {{ community.communityName }}
               </ion-select-option>
             </ion-select>
@@ -42,24 +29,16 @@
         </ion-row>
         <ion-row class="pagination">
           <ion-col class="ion-text-left">
-            <ion-button
-              class="nav btn"
-              size="small"
-              @click="prevPage"
-              :disabled="currentPage === 1"
-              ><ion-icon slot="icon-only" :icon="chevronBack"></ion-icon>
+            <ion-button class="nav btn" size="small" @click="prevPage" :disabled="currentPage === 1"><ion-icon
+                slot="icon-only" :icon="chevronBack"></ion-icon>
             </ion-button>
           </ion-col>
           <ion-col class="ion-text-center">
             <span> {{ currentPage }} of {{ totalPages }}</span>
           </ion-col>
           <ion-col class="ion-text-right">
-            <ion-button
-              class="nav btn"
-              size="small"
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              ><ion-icon slot="icon-only" :icon="chevronForward"></ion-icon>
+            <ion-button class="nav btn" size="small" @click="nextPage" :disabled="currentPage === totalPages"><ion-icon
+                slot="icon-only" :icon="chevronForward"></ion-icon>
             </ion-button>
           </ion-col>
         </ion-row>
@@ -72,21 +51,19 @@
           <ion-col>Points</ion-col>
         </ion-row>
         <ion-row v-for="user in pagedLeaderboard" :key="user.name!" class="userRow">
-          <ion-col v-if="user.rank === 1" class="golden" size="2"
-            >{{ user.rank }}.
+          <ion-col v-if="user.rank === 1" class="golden" size="2">{{ user.rank }}.
           </ion-col>
-          <ion-col v-else-if="user.rank === 2" class="silver" size="2"
-            >{{ user.rank }}.
+          <ion-col v-else-if="user.rank === 2" class="silver" size="2">{{ user.rank }}.
           </ion-col>
-          <ion-col v-else-if="user.rank === 3" class="bronze" size="2"
-            >{{ user.rank }}.
+          <ion-col v-else-if="user.rank === 3" class="bronze" size="2">{{ user.rank }}.
           </ion-col>
           <ion-col v-else size="2">{{ user.rank }}.</ion-col>
           <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
-           </ion-col>
-          <ion-col size="7" v-else-if="user.name != currentUser.username && selectedCommunity != emptyGuid" @click="togglePin(user, selectedCommunity)">
-            {{ user.name }} 
+          </ion-col>
+          <ion-col size="7" v-else-if="user.name != currentUser.username && selectedCommunity != ''"
+            @click="togglePin(user, selectedCommunity)">
+            {{ user.name }}
             <ion-icon :icon="isPinned(user) ? heart : heartOutline"></ion-icon>
           </ion-col>
           <ion-col size="7" v-else>{{ user.name }}</ion-col>
@@ -143,7 +120,7 @@ import { useStore } from "vuex";
 const store = useStore();
 
 const emptyGuid = '00000000-0000-0000-0000-000000000000';
-const selectedCommunity = ref(emptyGuid);
+const selectedCommunity = ref(store.getters.getCommunityId);
 const currentUser = store.getters.getUser;
 let communities: Community[] = [];
 const leaderboard = ref();
@@ -166,9 +143,10 @@ store.watch(
     if (message.includes("getCommunityUserRanking")) {
       await getCommunityUserRanking(selectedCommunity.value);
     }
-    if (communityId !== selectedCommunity.value){
-      console.log(communityId)
-      selectedCommunity.value = communityId;
+    if (communityId !== selectedCommunity.value) {
+      if (communityId === emptyGuid) {
+        selectedCommunity.value = "";
+      } else selectedCommunity.value = communityId;
       await getCommunityUserRanking(selectedCommunity.value);
     }
   }
@@ -178,14 +156,14 @@ onBeforeMount(async () => {
   try {
     const response = await apiService.communityApi.apiCommunityGet();
     communities = response.data;
-    await getCommunityUserRanking(null);
+    await getCommunityUserRanking(selectedCommunity.value);
   } catch (error) {
-    console.error("Failed fetching communities or ranking",error);
+    console.error("Failed fetching communities or ranking", error);
   }
   isLoading.value = false;
 });
 
-async function togglePin(user: UserDto, communityId: string){
+async function togglePin(user: UserDto, communityId: string) {
   const pinIndex = pinnedUsers.value.findIndex(
     (pin: {
       name: string | null | undefined;
@@ -198,7 +176,7 @@ async function togglePin(user: UserDto, communityId: string){
   if (pinIndex > -1) {
     pinnedUsers.value.splice(pinIndex, 1);
   } else {
-    pinnedUsers.value.push({      
+    pinnedUsers.value.push({
       points: user.points,
       name: user.name,
       registrationDate: user.registrationDate,
@@ -228,7 +206,7 @@ const isPinned = (user: UserDto) => {
   );
 };
 
-async function getCommunityUserRanking(communityId: string | null){
+async function getCommunityUserRanking(communityId: string | null) {
   try {
     const response = await apiService.communityApi.apiCommunityRankingGet(communityId!);
 
