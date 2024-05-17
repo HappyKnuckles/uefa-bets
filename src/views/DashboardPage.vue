@@ -107,7 +107,6 @@ store.watch(
     }
     if(add === addValue.value){
       addValue.value = !addValue.value;
-      console.log("ja")
       pinnedUsers.value = JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]");
       await getUserCommunities();
       await sortDisplayUsers();}
