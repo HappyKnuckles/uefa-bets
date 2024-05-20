@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, onUnmounted, ref } from "vue";
 import {
   IonPage,
   IonHeader,
@@ -120,7 +120,7 @@ onBeforeMount(async () => {
     console.error("Error fetching Usercommunities", error);
   }
   try {
-    await getGames();
+    await startPeriodicCheck();
   } catch (error) {
     console.error("Error fetching games", error);
   }
@@ -153,11 +153,24 @@ async function getGames() {
     await store.dispatch('fetchGames');
   }
   games.value = store.getters.getGames;
+  filterGames();
+}
+
+function filterGames() {
   const now = new Date();
   games.value = games.value.filter((game) => {
     const gameStartsAt = new Date(Date.parse(game.gameStartsAt!));
-    const diff = (gameStartsAt!.getTime() - now.getTime()) / (1000 * 60);
+    const diff = (gameStartsAt.getTime() - now.getTime()) / (1000 * 60);
     return Math.abs(diff) <= 90;
+  });
+}
+
+async function startPeriodicCheck() {
+  await getGames();
+  const interval = setInterval(getGames, 60000); 
+
+  onUnmounted(() => {
+    clearInterval(interval); 
   });
 }
 
