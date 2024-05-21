@@ -42,29 +42,6 @@
           </ion-col>
         </ion-row>
       </ion-grid>
-      <!--
-
-      <ion-row class="userRow" v-if="currentUser.rank">
-          <ion-col size="2">
-            <ion-col v-if="currentUser.rank === 1" class="golden">{{ currentUser.rank }}.</ion-col>
-            <ion-col v-else-if="currentUser.rank === 2" class="silver">{{ currentUser.rank }}.</ion-col>
-            <ion-col v-else-if="currentUser.rank === 3" class="bronze">{{ currentUser.rank }}.</ion-col>
-            <ion-col v-else>{{ currentUser.rank }}.</ion-col>
-          </ion-col>
-          <ion-col size="7">{{ currentUser.username }}</ion-col>
-          <ion-col>{{ currentUser.points }}</ion-col>
-        </ion-row>
-        <ion-row v-for="user in pinnedUsers" :key="user" class="userRow">
-          <ion-col size="2">{{ user.rank }}.</ion-col>
-          <ion-col size="7">{{ user.userName }}</ion-col>
-          <ion-col>{{ user.points }}</ion-col>
-        </ion-row>
-        <ion-row class="userRow" v-if="lastUser.rank">
-          <ion-col size="2">{{ lastUser.rank }}.</ion-col>
-          <ion-col size="7">{{ lastUser.name }}</ion-col>
-          <ion-col>{{ lastUser.points }}</ion-col>
-        </ion-row>
-    -->
       <ion-grid v-if="pagedLeaderboard1.length > 0" class="nameGrid">
         <ion-row class="titleRow">
           <ion-col size="2">Rank</ion-col>
@@ -88,16 +65,32 @@
           <ion-col
             size="7"
             v-else-if="user.name != currentUser.username && selectedCommunity != ''"
-            @click="togglePin(user, selectedCommunity)">
+            @click="togglePin(user, selectedCommunity)"
+          >
             {{ user.name }}
             <ion-icon :icon="isPinned(user) ? heart : heartOutline"></ion-icon>
           </ion-col>
           <ion-col size="7" v-else>{{ user.name }}</ion-col>
           <ion-col>{{ user.points }}</ion-col>
         </ion-row>
-        <ion-row class="pagination" v-if="pagedLeaderboard1.length >= pageSize && pagedLeaderboard1.length <= leaderboard.length">
+        <ion-row
+          class="pagination"
+          v-if="
+            pagedLeaderboard1.length >= pageSize &&
+            pagedLeaderboard1.length <= leaderboard.length
+          "
+        >
           <ion-col class="ion-text-center">
-            <ion-button class="nav btn" size="small" @click="increasePageSize(true)" :disabled=" pageSize1 > currentUserIndex - pageSize2 && pagedLeaderboard2.length > 0 || pagedLeaderboard1.length >= leaderboard.length">
+            <ion-button
+              class="nav btn"
+              size="small"
+              @click="increasePageSize(true)"
+              :disabled="
+                (pageSize1 > currentUserIndex - pageSize2 &&
+                  pagedLeaderboard2.length > 0) ||
+                pagedLeaderboard1.length >= leaderboard.length
+              "
+            >
               <ion-icon slot="icon-only" :icon="chevronDown"></ion-icon>
             </ion-button>
           </ion-col>
@@ -105,14 +98,16 @@
       </ion-grid>
       <ion-grid
         v-if="pagedLeaderboard2.length > 0 && currentUserIndex > 0"
-        class="nameGrid">
+        class="nameGrid"
+      >
         <ion-row class="pagination" v-if="pagedLeaderboard1.length >= pageSize">
           <ion-col class="ion-text-center">
             <ion-button
               class="nav btn"
               size="small"
               @click="increasePageSize(false)"
-              :disabled=" pageSize1 > currentUserIndex - pageSize2">
+              :disabled="pageSize1 > currentUserIndex - pageSize2"
+            >
               <ion-icon slot="icon-only" :icon="chevronUp"></ion-icon>
             </ion-button>
           </ion-col>
@@ -139,11 +134,22 @@
           <ion-col
             size="7"
             v-else-if="user.name != currentUser.username && selectedCommunity != ''"
-            @click="togglePin(user, selectedCommunity)">
+            @click="togglePin(user, selectedCommunity)"
+          >
             {{ user.name }}
             <ion-icon :icon="isPinned(user) ? heart : heartOutline"></ion-icon>
           </ion-col>
           <ion-col size="7" v-else>{{ user.name }}</ion-col>
+          <ion-col>{{ user.points }}</ion-col>
+        </ion-row>
+      </ion-grid>
+      <ion-grid class="nameGrid" v-if="pinnedUsers.length > 0">
+        <ion-row v-for="user in pinnedUsers" :key="user" class="userRow">
+          <ion-col size="2">{{ user.rank }}.</ion-col>
+          <ion-col size="7"
+            >{{ user.name }}
+            <ion-icon :icon="heart"></ion-icon>
+          </ion-col>
           <ion-col>{{ user.points }}</ion-col>
         </ion-row>
       </ion-grid>
@@ -192,13 +198,9 @@ let rand;
 
 store.watch(
   (state) => ({
-    message: state.message,
     communityId: state.communityId,
   }),
-  async ({ message, communityId }) => {
-    if (message.includes("getCommunityUserRanking")) {
-      await getCommunityUserRanking(selectedCommunity.value);
-    }
+  async ({ communityId }) => {
     if (communityId !== selectedCommunity.value) {
       if (communityId === emptyGuid) {
         selectedCommunity.value = "";
@@ -207,12 +209,18 @@ store.watch(
     }
   }
 );
+
+store.subscribe(async (mutation, state) => {
+  if (mutation.type === "setMessage") {
+    if (state.message.includes("getCommunityUserRanking")) {
+      await getCommunityUserRanking(selectedCommunity.value);
+    }
+  }
+});
+
 onBeforeMount(async () => {
   try {
-    // nur user communities?
-    // const response = await apiService.communityApi.apiCommunityGet();
-    // communities.value = response.data;   
-    await store.dispatch('fetchUserCommunities');
+    await store.dispatch("fetchUserCommunities");
     communities.value = store.getters.getUserCommunities;
     await getCommunityUserRanking(selectedCommunity.value);
     await getCurrentUserIndex(leaderboard.value);
@@ -223,7 +231,7 @@ onBeforeMount(async () => {
 });
 
 const filteredCommunities = computed(() => {
-  return communities.value.filter(community => community.communityName !== 'Global');
+  return communities.value.filter((community) => community.communityName !== "Global");
 });
 
 async function togglePin(user: UserDto, communityId: string) {
@@ -236,7 +244,7 @@ async function togglePin(user: UserDto, communityId: string) {
     }) =>
       pin.name === user.name &&
       pin.currentUserName === currentUser.username &&
-      pin.communityId === selectedCommunity.value // schauen ob passt
+      pin.communityId === selectedCommunity.value
   );
 
   if (pinIndex > -1) {
@@ -271,7 +279,7 @@ const isPinned = (user: UserDto) => {
     }) =>
       pin.name === user.name &&
       pin.currentUserName === currentUser.username &&
-      pin.communityId === selectedCommunity.value // schasuen ob passt
+      pin.communityId === selectedCommunity.value
   );
 };
 
@@ -302,6 +310,26 @@ async function getCommunityUserRanking(communityId: string | null) {
     }
 
     lastUser.value = leaderboard.value[leaderboard.value.length - 1];
+
+    pinnedUsers.value = [
+      ...new Map(
+        pinnedUsers.value.map((user: { name: any }) => [user.name, user])
+      ).values(),
+    ];
+
+    pinnedUsers.value = pinnedUsers.value.sort(
+      (
+        a: { points: number; registrationDate: string | number | Date },
+        b: { points: number; registrationDate: string | number | Date }
+      ) => {
+        if (a.points !== b.points) {
+          return b.points - a.points;
+        }
+        return (
+          new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
+        );
+      }
+    );
     pinnedUsers.value.forEach(
       (pinnedUser: {
         name: any;
@@ -371,7 +399,11 @@ const pagedLeaderboard1 = computed(() => {
 const pagedLeaderboard2 = computed(() => {
   const startIndex = Math.max(10, currentUserIndex.value - pageSize2.value + 1);
   const endIndex = startIndex + pageSize2.value;
-  if (currentUserIndex.value === -1 || currentUserIndex.value <= 9 || searchQuery.value !== '') {
+  if (
+    currentUserIndex.value === -1 ||
+    currentUserIndex.value <= 9 ||
+    searchQuery.value !== ""
+  ) {
     return [];
   } else return filteredLeaderboard.value.slice(startIndex, endIndex);
 });

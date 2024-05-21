@@ -96,16 +96,13 @@ const createAlert = async () => {
 };
 let rand;
 
-store.watch(
-  (state) => ({
-    message: state.message
-  }),
-  async ({ message }) => {
-    if (message.includes("getGames")) {
+store.subscribe(async (mutation, state) => {
+  if (mutation.type === 'setMessage') {
+    if (state.message.includes("getGames")) {
       await getUserCommunities();
     }
   }
-)
+}); 
 
 const createAlertController = async () => {
   const alert = await alertController.create({

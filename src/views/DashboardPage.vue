@@ -11,7 +11,7 @@
     <ion-content v-else>
       <ion-grid v-for="game in games" :key="game.gameId" class="gameGrid">
         <ion-row class="game">
-          <ion-badge>LIVE</ion-badge>
+          <ion-badge style="max-width: 25%; whitespace: break-spaces">{{ getBadgeText(game) }}</ion-badge>
           <ion-col class="ion-text-left">{{ game.teamHomeName }}</ion-col>
           <ion-col class="ion-text-center">
             {{ game.teamHomeGoals }}
@@ -21,11 +21,18 @@
           <ion-col class="ion-text-right">{{ game.teamAwayName }}</ion-col>
         </ion-row>
       </ion-grid>
-      <ion-grid v-for="community in communityWithMembers" :key="community.communityId" class="communityGrid">
-        <ion-grid class="headerGrid">            
-          <router-link :to="`/tabs/leaderboard`" @click="setCommunityId(community.communityId)">
+      <ion-grid
+        v-for="community in communityWithMembers"
+        :key="community.communityId"
+        class="communityGrid"
+      >
+        <ion-grid class="headerGrid">
+          <router-link
+            :to="`/tabs/leaderboard`"
+            @click="setCommunityId(community.communityId)"
+          >
             <ion-row class="headerRow">
-                {{ community.communityName }}
+              {{ community.communityName }}
             </ion-row>
           </router-link>
           <ion-row class="nameRow">
@@ -34,9 +41,13 @@
             <ion-col>Points</ion-col>
           </ion-row>
         </ion-grid>
-        <ion-row v-for="user in community.communityId != null
-          ? displayUsers[community.communityId]
-          : []" :key="user.name!" class="userRow">
+        <ion-row
+          v-for="user in community.communityId != null
+            ? displayUsers[community.communityId]
+            : []"
+          :key="user.name!"
+          class="userRow"
+        >
           <ion-col v-if="user.rank === 1" class="golden ion-text-center" size="2"
             >{{ user.rank }}.
           </ion-col>
@@ -51,7 +62,11 @@
             {{ user.name }}
           </ion-col>
           <ion-col v-else size="7">
-            <ion-icon v-if="user.communityId" :icon="heart" style="vertical-align: top;"></ion-icon>
+            <ion-icon
+              v-if="user.communityId"
+              :icon="heart"
+              style="vertical-align: top"
+            ></ion-icon>
             {{ user.name }}
           </ion-col>
           <ion-col>{{ user.points }}</ion-col>
@@ -89,29 +104,26 @@ const isLoading = ref(true);
 const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
-const addValue = ref(!store.getters.getAddValue);
-interface ExtendedUserDto extends UserDto{
+interface ExtendedUserDto extends UserDto {
   rank: number | null | undefined;
   communityId: any;
 }
 
-store.watch(
-  (state) => ({
-    message: state.message,
-    add: state.add
-  }),
-  async ({ message, add }) => {
-    if (message.includes("getGames")) {
+store.subscribe(async (mutation, state) => {
+  if (mutation.type === 'setMessage') {
+    if (state.message.includes("getGames")) {
       await getGames();
       await getUserCommunities();
     }
-    if(add === addValue.value){
-      addValue.value = !addValue.value;
-      pinnedUsers.value = JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]");
+  }
+  if(mutation.type === 'setAdd'){
+    pinnedUsers.value = JSON.parse(
+        localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]"
+      );
       await getUserCommunities();
-      await sortDisplayUsers();}
-    }
-);
+      await sortDisplayUsers();
+  }
+});
 
 onBeforeMount(async () => {
   try {
@@ -128,8 +140,34 @@ onBeforeMount(async () => {
   isLoading.value = false;
 });
 
-function setCommunityId(id: any){
-  store.commit('setCommunityId', id);
+function getBadgeText(game: Game) {
+  const now = new Date();
+  const gameStart = new Date(game.gameStartsAt!);
+  const diffInMinutes = Math.floor((gameStart.getTime() - now.getTime()) / 60000);
+
+  if (diffInMinutes > 90) {
+    return "";
+  } else if (diffInMinutes <= 90 && diffInMinutes > 0) {
+    return diffInMinutes;
+  } else if (diffInMinutes <= 0 && diffInMinutes > -90) {
+    return "LIVE";
+  } else {
+    return transformDate(game.gameStartsAt!);
+  }
+}
+
+function transformDate(dateString: string) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based in JS
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return day + '.' + month + ' ' + hours + ':' + minutes;
+}
+
+function setCommunityId(id: any) {
+  store.commit("setCommunityId", id);
 }
 
 async function sortDisplayUsers() {
@@ -142,18 +180,20 @@ async function sortDisplayUsers() {
 
 async function getUserCommunities() {
   if (!store.getters.getLoadingUserCommunities) {
-    await store.dispatch('fetchUserCommunities');
+    await store.dispatch("fetchUserCommunities");
   }
   communityWithMembers.value = store.getters.getUserCommunities;
 }
 
-
 async function getGames() {
   if (!store.getters.getLoadingGames) {
-    await store.dispatch('fetchGames');
+    await store.dispatch("fetchGames");
   }
-  games.value = store.getters.getGames;
-  filterGames();
+  console.log("called")
+  setTimeout(function () {
+    games.value = store.getters.getGames;
+    filterGames();
+  }, 500);
 }
 
 function filterGames() {
@@ -161,21 +201,23 @@ function filterGames() {
   games.value = games.value.filter((game) => {
     const gameStartsAt = new Date(Date.parse(game.gameStartsAt!));
     const diff = (gameStartsAt.getTime() - now.getTime()) / (1000 * 60);
-    return Math.abs(diff) <= 90;
+    return diff <= 90;
   });
 }
 
 async function startPeriodicCheck() {
   await getGames();
-  const interval = setInterval(getGames, 60000); 
+  const interval = setInterval(getGames, 60000);
 
   onUnmounted(() => {
-    clearInterval(interval); 
+    clearInterval(interval);
   });
 }
 
 async function getDisplayUsers(community: CommunityMembersDto) {
-  const sortedMembers: ExtendedUserDto[] = community.members!.map(user => user as ExtendedUserDto);
+  const sortedMembers: ExtendedUserDto[] = community.members!.map(
+    (user) => user as ExtendedUserDto
+  );
 
   if (sortedMembers.length >= 7) {
     displayUsers.value = sortedMembers.slice(0, 3);
@@ -203,7 +245,9 @@ async function getDisplayUsers(community: CommunityMembersDto) {
         );
         break;
       case isCurrentUserLast:
-        displayUsers.value.push(...sortedMembers.slice(currentUserIndex - 3, currentUserIndex));
+        displayUsers.value.push(
+          ...sortedMembers.slice(currentUserIndex - 3, currentUserIndex)
+        );
         break;
       default:
         displayUsers.value.push(
@@ -216,12 +260,19 @@ async function getDisplayUsers(community: CommunityMembersDto) {
     displayUsers.value = sortedMembers;
   }
 
-  pinnedUsers.value = pinnedUsers.value.sort((a: { points: number; registrationDate: string | number | Date; }, b: { points: number; registrationDate: string | number | Date; }) => {
-    if (a.points !== b.points) {
-      return b.points - a.points;
+  pinnedUsers.value = pinnedUsers.value.sort(
+    (
+      a: { points: number; registrationDate: string | number | Date },
+      b: { points: number; registrationDate: string | number | Date }
+    ) => {
+      if (a.points !== b.points) {
+        return b.points - a.points;
+      }
+      return (
+        new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
+      );
     }
-    return new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime();
-  });
+  );
 
   for (const user of pinnedUsers.value) {
     if (user.communityId === community.communityId) {
@@ -230,7 +281,7 @@ async function getDisplayUsers(community: CommunityMembersDto) {
       }
     }
   }
-  // eventuell vor pinnedusers da diese mit rang gespeichert werden
+
   let prevValue = 0;
   let currentRank = 1;
   const pointsToRank = new Map();
@@ -245,10 +296,10 @@ async function getDisplayUsers(community: CommunityMembersDto) {
     }
   });
 
-  displayUsers.value = displayUsers.value.map(user => {
+  displayUsers.value = displayUsers.value.map((user) => {
     return {
       ...user,
-      rank: pointsToRank.get(user.points)
+      rank: pointsToRank.get(user.points),
     };
   });
 
@@ -283,7 +334,8 @@ async function getDisplayUsers(community: CommunityMembersDto) {
   }
 }
 
-.userRow {}
+.userRow {
+}
 
 .game {
   font-size: 17px;
