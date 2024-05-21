@@ -25,7 +25,7 @@ Meine Entscheidung fiel auf Vue, vor allem aufgrund seines Rufs für hervorragen
 
 <h1>Backend</h1> 
 <h2>Language:</h2>
-C# mit Entity Framework Core
+ASP.NET (C#) mit Entity Framework Core
 <h2>Wieso C# und EFC?</h2>
 Meine Erfahrung mit Datenbanken und Backend-Entwicklung ist begrenzt. Daher habe ich mich für die Sprache entschieden, mit der ich am meisten Erfahrung habe: C#. <br>
 Ebenso habe ich die meisten meiner bisherigen Backends mit ASP.NET Core entwickelt, weshalb mir die Wahl leicht fiel. <br>
