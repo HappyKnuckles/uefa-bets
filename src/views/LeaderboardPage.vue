@@ -360,8 +360,8 @@ const performSearch = () => {
 const pageSize1 = ref(10);
 const pageSize2 = ref(10);
 watch(pageSize, (newValue) => {
-  pageSize1.value = newValue;
-  pageSize2.value = newValue;
+  pageSize1.value = parseInt(newValue.toString());
+  pageSize2.value = parseInt(newValue.toString());
 });
 const currentPage1 = ref(1);
 const currentPage2 = ref(1);
@@ -384,8 +384,10 @@ async function getCurrentUserIndex(leaderboard: any) {
 }
 
 const pagedLeaderboard1 = computed(() => {
+  console.log(pageSize2.value)
   const startIndex = (currentPage1.value - 1) * pageSize1.value;
   const endIndex = startIndex + pageSize1.value;
+  console.log(startIndex, endIndex)
 
   if (currentUserIndex.value === -1 || currentUserIndex.value <= 9) {
     return filteredLeaderboard.value.slice(startIndex, endIndex);
@@ -397,8 +399,10 @@ const pagedLeaderboard1 = computed(() => {
 });
 
 const pagedLeaderboard2 = computed(() => {
+  console.log(pageSize2.value)
   const startIndex = Math.max(10, currentUserIndex.value - pageSize2.value + 1);
   const endIndex = startIndex + pageSize2.value;
+  console.log(startIndex, endIndex)
   if (
     currentUserIndex.value === -1 ||
     currentUserIndex.value <= 9 ||
