@@ -11,7 +11,9 @@
     <ion-content v-else>
       <ion-grid v-for="game in games" :key="game.gameId" class="gameGrid">
         <ion-row class="game">
-          <ion-badge style="max-width: 25%; whitespace: break-spaces">{{ getBadgeText(game) }}</ion-badge>
+          <ion-badge style="max-width: 25%; whitespace: break-spaces">{{
+            getBadgeText(game)
+          }}</ion-badge>
           <ion-col class="ion-text-left">{{ game.teamHomeName }}</ion-col>
           <ion-col class="ion-text-center">
             {{ game.teamHomeGoals }}
@@ -110,18 +112,18 @@ interface ExtendedUserDto extends UserDto {
 }
 
 store.subscribe(async (mutation, state) => {
-  if (mutation.type === 'setMessage') {
+  if (mutation.type === "setMessage") {
     if (state.message.includes("getGames")) {
       await getGames();
       await getUserCommunities();
     }
   }
-  if(mutation.type === 'setAdd'){
+  if (mutation.type === "setAdd") {
     pinnedUsers.value = JSON.parse(
-        localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]"
-      );
-      await getUserCommunities();
-      await sortDisplayUsers();
+      localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]"
+    );
+    await getUserCommunities();
+    await sortDisplayUsers();
   }
 });
 
@@ -157,13 +159,13 @@ function getBadgeText(game: Game) {
 }
 
 function transformDate(dateString: string) {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based in JS
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based in JS
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
 
-    return day + '.' + month + ' ' + hours + ':' + minutes;
+  return day + "." + month + " " + hours + ":" + minutes;
 }
 
 function setCommunityId(id: any) {
@@ -189,7 +191,7 @@ async function getGames() {
   if (!store.getters.getLoadingGames) {
     await store.dispatch("fetchGames");
   }
-  console.log("called")
+  console.log("called");
   setTimeout(function () {
     games.value = store.getters.getGames;
     filterGames();
@@ -260,19 +262,14 @@ async function getDisplayUsers(community: CommunityMembersDto) {
     displayUsers.value = sortedMembers;
   }
 
-  pinnedUsers.value = pinnedUsers.value.sort(
-    (
-      a: { points: number; registrationDate: string | number | Date },
-      b: { points: number; registrationDate: string | number | Date }
-    ) => {
-      if (a.points !== b.points) {
-        return b.points - a.points;
-      }
-      return (
-        new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
-      );
+  pinnedUsers.value.sort((a: UserDto, b: UserDto) => {
+    if (a.points !== b.points) {
+      return b.points! - a.points!;
     }
-  );
+    return (
+      new Date(b.registrationDate!).getTime() - new Date(a.registrationDate!).getTime()
+    );
+  });
 
   for (const user of pinnedUsers.value) {
     if (user.communityId === community.communityId) {

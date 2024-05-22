@@ -193,8 +193,8 @@ const searchQuery = ref("");
 const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
-const lastUser = ref();
 let rand;
+const globalLeaderboard = ref();
 
 store.watch(
   (state) => ({
@@ -222,8 +222,13 @@ onBeforeMount(async () => {
   try {
     await store.dispatch("fetchUserCommunities");
     communities.value = store.getters.getUserCommunities;
+    console.log("0");
+    await getPinnedUsers();
+    console.log("1");
     await getCommunityUserRanking(selectedCommunity.value);
+    console.log("2");
     await getCurrentUserIndex(leaderboard.value);
+    console.log("3");
   } catch (error) {
     console.error("Failed fetching communities or ranking", error);
   }
@@ -234,17 +239,21 @@ const filteredCommunities = computed(() => {
   return communities.value.filter((community) => community.communityName !== "Global");
 });
 
+interface PinUser {
+  points: number;
+  name: string | null | undefined;
+  registrationDate: string;
+  currentUserName: string;
+  communityId: string | null | undefined;
+  rank: number | null | undefined;
+}
+
 async function togglePin(user: UserDto, communityId: string) {
   const pinIndex = pinnedUsers.value.findIndex(
-    (pin: {
-      name: string | null | undefined;
-      currentUserName: any;
-      communityId: string | null | undefined;
-      rank: number | null | undefined;
-    }) =>
-      pin.name === user.name &&
-      pin.currentUserName === currentUser.username &&
-      pin.communityId === selectedCommunity.value
+    (pin: PinUser) =>
+      pin.name === user.name && pin.currentUserName === currentUser.username
+    // &&
+    // pin.communityId === selectedCommunity.value
   );
 
   if (pinIndex > -1) {
@@ -259,98 +268,99 @@ async function togglePin(user: UserDto, communityId: string) {
       rank: null,
     });
   }
-  rand = store.getters.getAddValue;
-  rand = !rand;
+  rand = !store.getters.getAddValue;
   localStorage.setItem(
     `pinnedUsers_${currentUser.username}`,
     JSON.stringify(pinnedUsers.value)
   );
-
+  await getPinnedUsers();
   store.dispatch("addUser", rand);
 }
 
 const isPinned = (user: UserDto) => {
   return pinnedUsers.value.some(
-    (pin: {
-      name: string | null | undefined;
-      currentUserName: any;
-      communityId: string | null | undefined;
-      rank: number | null | undefined;
-    }) =>
-      pin.name === user.name &&
-      pin.currentUserName === currentUser.username &&
-      pin.communityId === selectedCommunity.value
+    (pin: PinUser) =>
+      pin.name === user.name && pin.currentUserName === currentUser.username
+    // &&
+    // pin.communityId === selectedCommunity.value
   );
 };
 
+function calculateRank(users: UserDto[]): UserDto[] {
+  let prevValue = 0;
+  let currentRank = 1;
+  return users.reduce((acc: any[], user, index) => {
+    if (user.points !== prevValue) {
+      currentRank = index + 1;
+      prevValue = user.points!;
+    }
+    acc.push({
+      ...user,
+      rank: currentRank,
+    });
+    return acc;
+  }, []);
+}
+
 async function getCommunityUserRanking(communityId: string | null) {
   try {
-    const response = await apiService.communityApi.apiCommunityRankingGet(communityId!);
-    store.commit("setCommunityId", communityId);
-    let prevValue = 0;
-    let currentRank = 1;
-    leaderboard.value = response.data.members!.reduce((acc: any[], user, index) => {
-      if (user.points !== prevValue) {
-        currentRank = index + 1;
-        prevValue = user.points!;
+    if (communityId === emptyGuid || communityId === "") {
+      leaderboard.value = globalLeaderboard.value;
+    } else {
+      const response = await apiService.communityApi.apiCommunityRankingGet(communityId!);
+      store.commit("setCommunityId", communityId);
+      leaderboard.value = calculateRank(response.data.members!);
+
+      currentUserIndex.value = leaderboard.value.findIndex(
+        (user: { name: any }) => user.name === currentUser.username
+      );
+
+      if (currentUserIndex.value !== -1) {
+        currentUser.rank = leaderboard.value[currentUserIndex.value].rank;
       }
-      acc.push({
-        ...user,
-        rank: currentRank,
-      });
-      return acc;
-    }, []);
-
-    currentUserIndex.value = leaderboard.value.findIndex(
-      (user: { name: any }) => user.name === currentUser.username
-    );
-
-    if (currentUserIndex.value !== -1) {
-      currentUser.rank = leaderboard.value[currentUserIndex.value].rank;
     }
-
-    lastUser.value = leaderboard.value[leaderboard.value.length - 1];
-
-    pinnedUsers.value = [
-      ...new Map(
-        pinnedUsers.value.map((user: { name: any }) => [user.name, user])
-      ).values(),
-    ];
-
-    pinnedUsers.value = pinnedUsers.value.sort(
-      (
-        a: { points: number; registrationDate: string | number | Date },
-        b: { points: number; registrationDate: string | number | Date }
-      ) => {
-        if (a.points !== b.points) {
-          return b.points - a.points;
-        }
-        return (
-          new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
-        );
-      }
-    );
-    pinnedUsers.value.forEach(
-      (pinnedUser: {
-        name: any;
-        points: any;
-        currentUserName: any;
-        communityId: any;
-        rank: any;
-      }) => {
-        const pinnedUserIndex = leaderboard.value.findIndex(
-          (user: { name: any }) => user.name === pinnedUser.name
-        );
-        if (pinnedUserIndex !== -1) {
-          pinnedUser.rank = leaderboard.value[pinnedUserIndex].rank;
-        } else {
-          pinnedUser.rank = undefined;
-        }
-      }
-    );
   } catch (error) {
     console.log(error);
   }
+}
+
+async function getPinnedUsers() {
+  const response = await apiService.communityApi.apiCommunityRankingGet();
+  globalLeaderboard.value = calculateRank(response.data.members!);
+
+  currentUserIndex.value = globalLeaderboard.value.findIndex(
+    (user: PinUser) => user.name === currentUser.username
+  );
+
+  if (currentUserIndex.value !== -1) {
+    currentUser.rank = globalLeaderboard.value[currentUserIndex.value].rank;
+  }
+
+  pinnedUsers.value = [
+    ...new Map(
+      pinnedUsers.value.map((user: { name: any }) => [user.name, user])
+    ).values(),
+  ];
+
+  pinnedUsers.value.sort((a: UserDto, b: UserDto) => {
+    if (a.points !== b.points) {
+      return b.points! - a.points!;
+    }
+    return (
+      new Date(b.registrationDate!).getTime() - new Date(a.registrationDate!).getTime()
+    );
+  });
+
+  pinnedUsers.value.forEach((pinnedUser: PinUser) => {
+    const pinnedUserIndex = globalLeaderboard.value.findIndex(
+      (user: PinUser) => user.name === pinnedUser.name
+    );
+    if (pinnedUserIndex !== -1) {
+      pinnedUser.rank = globalLeaderboard.value[pinnedUserIndex].rank;
+    } else {
+      pinnedUser.rank = undefined;
+    }
+  });
 }
 
 const performSearch = () => {

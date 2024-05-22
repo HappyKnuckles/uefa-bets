@@ -139,8 +139,7 @@ const handleAlertInput = async (communityname: string | undefined) => {
       communityname
     );
     await getCommunites();
-    rand = store.getters.getAddValue;
-    rand = !rand;
+    rand = !store.getters.getAddValue;
     store.dispatch("addUser", rand)
     await getUserCommunities();
   } catch (error) {
