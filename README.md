@@ -1,6 +1,6 @@
 <h1>Frontend</h1>
 <h2>Framework:</h2> Ionic Vue
-<h2>Warum Ionic Vue?:</h2> Ich habe mich für eine Cross-Platform Mobile App entschieden, weil ich das Designen eines mobilen Interfaces als angenehmer empfinde als andere Alternativen. Da ich bereits Erfahrung mit der Entwicklung in Ionic habe, fiel mir die Wahl leicht. <br>
+<h2>Warum Ionic Vue?</h2> Ich habe mich für eine Cross-Platform Mobile App entschieden, weil ich das Designen eines mobilen Interfaces als angenehmer empfinde als andere Alternativen. Da ich bereits Erfahrung mit der Entwicklung in Ionic habe, fiel mir die Wahl leicht. <br>
 Bisher habe ich im Frontend hauptsächlich mit (Ionic) Angular und Thymeleaf gearbeitet. Für diese Challenge wollte ich jedoch ein neues Framework erlernen und anwenden. <br>
 Meine Entscheidung fiel auf Vue, vor allem aufgrund seines Rufs für hervorragende Reaktivität und Performance.
 <h2>Optimizations:</h2>
