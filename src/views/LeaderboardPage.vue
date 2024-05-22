@@ -222,13 +222,9 @@ onBeforeMount(async () => {
   try {
     await store.dispatch("fetchUserCommunities");
     communities.value = store.getters.getUserCommunities;
-    console.log("0");
     await getPinnedUsers();
-    console.log("1");
     await getCommunityUserRanking(selectedCommunity.value);
-    console.log("2");
     await getCurrentUserIndex(leaderboard.value);
-    console.log("3");
   } catch (error) {
     console.error("Failed fetching communities or ranking", error);
   }
@@ -407,8 +403,11 @@ const pagedLeaderboard1 = computed(() => {
 });
 
 const pagedLeaderboard2 = computed(() => {
-  const startIndex = Math.max(10, currentUserIndex.value - pageSize2.value + 1);
+  const startIndex = Math.max(0, currentUserIndex.value - pageSize2.value + 1);
   const endIndex = startIndex + pageSize2.value;
+  console.log(pageSize1.value,currentUserIndex.value + 1 - pageSize2.value)
+console.log(pageSize1.value > currentUserIndex.value + 1 - pageSize2.value)
+
   if (
     currentUserIndex.value === -1 ||
     currentUserIndex.value <= 9 ||
@@ -422,7 +421,6 @@ const changePageSize = (pageSize: Ref<any>, increment: any) => {
   const newValue = parseInt(pageSize.value) + parseInt(increment);
   pageSize.value = newValue;
 };
-
 const increasePageSize = (increaseLeaderboard1: boolean) => {
   const isOverlapping = pageSize1.value > currentUserIndex.value - pageSize2.value;
   if (!isOverlapping) {
