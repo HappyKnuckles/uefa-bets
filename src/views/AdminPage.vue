@@ -73,6 +73,8 @@ async function getGames() {
 }, 500);
 }
 
+
+
 async function setGoal(awayTeam: boolean, gameId: number) {
   await apiService.gameApi.apiGameGoalPost(awayTeam, gameId);
   await getGames();

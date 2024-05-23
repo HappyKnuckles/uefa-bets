@@ -25,7 +25,11 @@
             </ion-badge>
           </ion-col>
           <ion-col>
-            <ion-button :id="'member-view-' + community.communityId" size="small" class="actionBtn">
+            <ion-button
+              :id="'member-view-' + community.communityId"
+              size="small"
+              class="actionBtn"
+            >
               <ion-icon slot="icon-only" :icon="informationCircleOutline"></ion-icon>
             </ion-button>
           </ion-col>
@@ -52,7 +56,11 @@
             </ion-badge>
           </ion-col>
           <ion-col>
-            <ion-button @click="joinCommunity(community.communityId!)" size="small" class="actionBtn">
+            <ion-button
+              @click="joinCommunity(community.communityId!)"
+              size="small"
+              class="actionBtn"
+            >
               Join
             </ion-button>
           </ion-col>
@@ -85,7 +93,7 @@ import { Community, CommunityMembersDto, User } from "@/generated";
 import { onBeforeMount, ref } from "vue";
 import { addOutline, informationCircleOutline } from "ionicons/icons";
 import { useStore } from "vuex";
-const store = useStore()
+const store = useStore();
 const currentUser: User = store.getters.getUser;
 const communityWithMembers = ref<CommunityMembersDto[]>([]);
 const allCommunities = ref<Community[]>([]);
@@ -97,12 +105,12 @@ const createAlert = async () => {
 let rand;
 
 store.subscribe(async (mutation, state) => {
-  if (mutation.type === 'setMessage') {
+  if (mutation.type === "setMessage") {
     if (state.message.includes("getGames")) {
       await getUserCommunities();
     }
   }
-}); 
+});
 
 const createAlertController = async () => {
   const alert = await alertController.create({
@@ -138,10 +146,10 @@ const handleAlertInput = async (communityname: string | undefined) => {
       currentUser.userId,
       communityname
     );
-    await getCommunites();
     rand = !store.getters.getAddValue;
-    store.dispatch("addUser", rand)
+    store.dispatch("addUser", rand);
     await getUserCommunities();
+    await getCommunites();
   } catch (error) {
     console.error(error);
   }
@@ -163,11 +171,12 @@ onBeforeMount(async () => {
 
 async function getUserCommunities() {
   if (!store.getters.getLoadingUserCommunities) {
-    await store.dispatch('fetchUserCommunities');
+    await store.dispatch("fetchUserCommunities");
   }
-  communityWithMembers.value = store.getters.getUserCommunities;
+  setTimeout(function () {
+    communityWithMembers.value = store.getters.getUserCommunities;
+  }, 500);
 }
-
 
 async function getCommunites() {
   const response = await apiService.communityApi.apiCommunityCommunitesWithoutUserGet(
@@ -184,9 +193,8 @@ async function joinCommunity(communityId: string) {
     );
     await getUserCommunities();
     await getCommunites();
-    rand = store.getters.getAddValue;
-    rand = !rand;
-    store.dispatch("addUser", rand)
+    rand = !store.getters.getAddValue;
+    store.dispatch("addUser", rand);
   } catch (error) {
     console.log(error);
   }

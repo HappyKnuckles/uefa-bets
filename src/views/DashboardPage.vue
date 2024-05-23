@@ -9,20 +9,15 @@
       <ion-spinner></ion-spinner>
     </ion-content>
     <ion-content v-else>
+      <h2>Future Games</h2>
       <ion-grid v-for="game in games" :key="game.gameId" class="gameGrid">
-        <ion-row class="game">
-          <ion-badge style="max-width: 25%; whitespace: break-spaces">{{
-            getBadgeText(game)
-          }}</ion-badge>
-          <ion-col class="ion-text-left">{{ game.teamHomeName }}</ion-col>
-          <ion-col class="ion-text-center">
-            {{ game.teamHomeGoals }}
-            :
-            {{ game.teamAwayGoals }}
-          </ion-col>
-          <ion-col class="ion-text-right">{{ game.teamAwayName }}</ion-col>
-        </ion-row>
+        <GameGrid :game="game" :past="false" />
       </ion-grid>
+      <h2>Past Games</h2>
+      <ion-grid v-for="game in pastGames" :key="game.gameId" class="gameGrid">
+        <GameGrid :game="game" :past="true" />
+      </ion-grid>
+      <h2>Leaderboard preview</h2>
       <ion-grid
         v-for="community in communityWithMembers"
         :key="community.communityId"
@@ -50,16 +45,7 @@
           :key="user.name!"
           class="userRow"
         >
-          <ion-col v-if="user.rank === 1" class="golden ion-text-center" size="2"
-            >{{ user.rank }}.
-          </ion-col>
-          <ion-col v-else-if="user.rank === 2" class="silver ion-text-center" size="2"
-            >{{ user.rank }}.
-          </ion-col>
-          <ion-col v-else-if="user.rank === 3" class="bronze ion-text-center" size="2"
-            >{{ user.rank }}.
-          </ion-col>
-          <ion-col v-else class="ion-text-center" size="2">{{ user.rank }}.</ion-col>
+          <UserRow :user="user" :center="true"></UserRow>
           <ion-col size="7" v-if="user.name === currentUser.username" class="red">
             {{ user.name }}
           </ion-col>
@@ -88,7 +74,6 @@ import {
   IonContent,
   IonSpinner,
   IonGrid,
-  IonBadge,
   IonRow,
   IonCol,
   IonIcon,
@@ -96,9 +81,14 @@ import {
 import { User, Game, CommunityMembersDto, UserDto } from "@/generated/api";
 import { useStore } from "vuex";
 import { heart } from "ionicons/icons";
+import GameGrid from "../components/GameGrid.vue";
+import UserRow from "../components/UserRow.vue";
+
 const store = useStore();
 
 const games = ref<Game[]>([]);
+const pastGames = ref<Game[]>([]);
+
 const currentUser: User = store.getters.getUser;
 const displayUsers: { [key: string]: ExtendedUserDto[] } = {};
 const communityWithMembers = ref<CommunityMembersDto[]>([]);
@@ -106,6 +96,7 @@ const isLoading = ref(true);
 const pinnedUsers = ref(
   JSON.parse(localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]")
 );
+
 interface ExtendedUserDto extends UserDto {
   rank: number | null | undefined;
   communityId: any;
@@ -119,12 +110,12 @@ store.subscribe(async (mutation, state) => {
     }
   }
   if (mutation.type === "setAdd") {
-    pinnedUsers.value = JSON.parse(
-      localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]"
-    );
     await getUserCommunities();
-    await sortDisplayUsers();
   }
+  pinnedUsers.value = JSON.parse(
+    localStorage.getItem(`pinnedUsers_${currentUser.username}`) || "[]"
+  );
+  await sortDisplayUsers();
 });
 
 onBeforeMount(async () => {
@@ -141,32 +132,6 @@ onBeforeMount(async () => {
   await sortDisplayUsers();
   isLoading.value = false;
 });
-
-function getBadgeText(game: Game) {
-  const now = new Date();
-  const gameStart = new Date(game.gameStartsAt!);
-  const diffInMinutes = Math.floor((gameStart.getTime() - now.getTime()) / 60000);
-
-  if (diffInMinutes > 90) {
-    return "";
-  } else if (diffInMinutes <= 90 && diffInMinutes > 0) {
-    return diffInMinutes;
-  } else if (diffInMinutes <= 0 && diffInMinutes > -90) {
-    return "LIVE";
-  } else {
-    return transformDate(game.gameStartsAt!);
-  }
-}
-
-function transformDate(dateString: string) {
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-
-  return day + "." + month + " " + hours + ":" + minutes;
-}
 
 function setCommunityId(id: any) {
   store.commit("setCommunityId", id);
@@ -191,7 +156,6 @@ async function getGames() {
   if (!store.getters.getLoadingGames) {
     await store.dispatch("fetchGames");
   }
-  console.log("called");
   setTimeout(function () {
     games.value = store.getters.getGames;
     filterGames();
@@ -200,11 +164,22 @@ async function getGames() {
 
 function filterGames() {
   const now = new Date();
-  games.value = games.value.filter((game) => {
+  const upcomingGames: Game[] = [];
+  const playedGames: Game[] = [];
+
+  games.value.forEach((game) => {
     const gameStartsAt = new Date(Date.parse(game.gameStartsAt!));
     const diff = (gameStartsAt.getTime() - now.getTime()) / (1000 * 60);
-    return diff <= 90;
+
+    if (Math.abs(diff) < 90) {
+      upcomingGames.push(game);
+    } else if (diff <= 0) {
+      playedGames.push(game);
+    }
   });
+
+  pastGames.value = playedGames;
+  games.value = upcomingGames;
 }
 
 async function startPeriodicCheck() {
@@ -306,6 +281,10 @@ async function getDisplayUsers(community: CommunityMembersDto) {
 </script>
 
 <style scoped>
+h2 {
+  margin-left: 15px;
+  font-weight: 600;
+}
 .communityGrid,
 .gameGrid {
   margin: 15px;
@@ -337,19 +316,6 @@ async function getDisplayUsers(community: CommunityMembersDto) {
 .game {
   font-size: 17px;
 }
-
-.golden {
-  color: gold;
-}
-
-.silver {
-  color: silver;
-}
-
-.bronze {
-  color: #cd7f32;
-}
-
 .red {
   color: var(--ion-color-primary);
 }
