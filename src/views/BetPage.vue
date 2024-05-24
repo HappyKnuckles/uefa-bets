@@ -25,7 +25,6 @@
       <ion-grid v-for="game in games" :key="game.gameId">
         <form
           @submit.prevent="() => bet(game.gameId!)"
-          v-if="new Date(game.gameStartsAt!) > new Date()"
         >
           <ion-row class="game">
             <ion-col size="4" class="ion-text-left">{{ game.teamHomeName }}</ion-col>
@@ -73,7 +72,7 @@ import {
   IonSpinner,
 } from "@ionic/vue";
 import apiService from "@/services/apiService";
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, onUnmounted, ref } from "vue";
 import { useStore } from "vuex";
 const store = useStore()
 
@@ -88,7 +87,7 @@ const isLoading = ref(true);
 
 onBeforeMount(async () => {
   try {
-    await getBetlessGames();
+    await startPeriodicCheck();
   } catch (error) {
     console.error("Error fetching games", error);
   }
@@ -117,6 +116,15 @@ async function getBetlessGames() {
   });
 }
 
+async function startPeriodicCheck() {
+  await getBetlessGames();
+  const interval = setInterval(getBetlessGames, 60000); 
+
+  onUnmounted(() => {
+    clearInterval(interval); 
+  });
+}
+
 function getBetForm(gameId: number) {
   return betForms.value[gameId];
 }
@@ -124,18 +132,26 @@ function getBetForm(gameId: number) {
 async function bet(gameId: number) {
   try {
     const betForm = betForms.value[gameId];
-    apiService.betApi.apiBetPlaceBetPost(
-      parseInt(betForm.homeTeamGoals),
-      parseInt(betForm.awayTeamGoals),
-      gameId,
-      betForm.userId
-    );
+    const game = games.value.find(game => game.gameId === gameId);
+    
+    if (game && new Date(game.gameStartsAt!) > new Date()) {
+      await apiService.betApi.apiBetPlaceBetPost(
+        parseInt(betForm.homeTeamGoals),
+        parseInt(betForm.awayTeamGoals),
+        gameId,
+        betForm.userId
+      );
+    } else {
+      console.log("Cannot place bet on a game that has already started.");
+    }     
     await getBetlessGames();
     await getBets();
+
   } catch (error) {
     console.error(error);
   }
 }
+
 </script>
 <style scoped>
 ion-input {

@@ -1,6 +1,7 @@
 import { createStore } from 'vuex';
 import { CommunityMembersDto, Game, User } from '@/generated';
 import apiService from '@/services/apiService';
+import { isPlatform } from '@ionic/vue';
 
 export interface State {
   socket: WebSocket | null;
@@ -81,7 +82,10 @@ export const store = createStore<State>({
   },
   actions: {
     initWebSocket({ commit }) {
-      const socket = new WebSocket('wss://localhost:44320/allHub');
+      let socket: WebSocket;
+      if(isPlatform('android')){
+        socket = new WebSocket('ws://10.0.2.2:5111/allHub');
+      } else socket = new WebSocket('wss://localhost:44320/allHub');
 
       socket.onopen = () => {
         console.log('WebSocket connection opened');

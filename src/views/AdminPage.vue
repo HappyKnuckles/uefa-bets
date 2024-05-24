@@ -68,8 +68,12 @@ async function getGames() {
   if (!store.getters.getLoadingGames) {
     await store.dispatch("fetchGames");
   }
+  setTimeout(function() {
   games.value = store.getters.getGames;
+}, 500);
 }
+
+
 
 async function setGoal(awayTeam: boolean, gameId: number) {
   await apiService.gameApi.apiGameGoalPost(awayTeam, gameId);
