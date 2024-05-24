@@ -1,3 +1,5 @@
+<h1>Erklärungsvideo</h1>
+https://youtu.be/in1I2efqZcE
 <h1>Frontend</h1>
 <h2>Framework:</h2> Ionic Vue
 <h2>Warum Ionic Vue?</h2> Ich habe mich für eine Cross-Platform Mobile App entschieden, weil ich das Designen eines mobilen Interfaces als angenehmer empfinde als andere Alternativen. Da ich bereits Erfahrung mit der Entwicklung in Ionic habe, fiel mir die Wahl leicht. <br>
@@ -35,3 +37,5 @@ Die wohl wichtigste Optimierung für das Backend wäre wohl genauso wie im Front
 Die Websocket Funktionalität ist vermutlich ein weiterer zu optimierender Punkt. Anstatt zum Beispiel alle Daten neu zu laden, könnte die WebSocket-Implementierung effizienter gestaltet werden. Hier fehlt mir jedoch bisher das nötige Wissen, um dies optimal umzusetzen.
 <h2>Url:</h2>
 https://github.com/HappyKnuckles/Check24_Backend
+
+<h1>Approach</h1>
