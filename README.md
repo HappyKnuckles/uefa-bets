@@ -39,4 +39,5 @@ Die Websocket Funktionalität ist vermutlich ein weiterer zu optimierender Punkt
 https://github.com/HappyKnuckles/Check24_Backend
 
 <h1>Approach</h1>
-Hauptidee war es die Logik stark zwischen Backend und Frontend aufzuteilen, damit das Endgerät ebenso Sachen wie das Leaderboard Ranking berechnet, um den Server, trotz mehreren Abfragen, Last abzunehmen.
+Hauptidee war es die Logik stark zwischen Backend und Frontend aufzuteilen, damit das Endgerät ebenso Berechnungen wie das Leaderboard Ranking übernimmt, um den Server, trotz vermehrter Abfragen, Last abzunehmen.
+Die Last liegt dementsprechend bei etlichen Endgeräten, statt nur bei einem Server.
